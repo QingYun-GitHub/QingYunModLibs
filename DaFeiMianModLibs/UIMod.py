@@ -155,7 +155,7 @@ def GetEntityByCoordReleaseClientEvent(event):
     Touch = False
 
 
-SystemApi.Event_Client("UiInitFinished", UiInitFinished)
-SystemApi.Event_Client("OnScriptTickClient", OnScriptTick)
-SystemApi.Event_Client("GetEntityByCoordEvent", GetEntityByCoordEvent)
-SystemApi.Event_Client("GetEntityByCoordReleaseClientEvent", GetEntityByCoordReleaseClientEvent)
+SystemApi.ListenClientEvents("UiInitFinished", UiInitFinished)
+SystemApi.ListenClientEvents("OnScriptTickClient", OnScriptTick)
+SystemApi.ListenClientEvents("GetEntityByCoordEvent", GetEntityByCoordEvent)
+SystemApi.ListenClientEvents("GetEntityByCoordReleaseClientEvent", GetEntityByCoordReleaseClientEvent)

@@ -1,268 +1,281 @@
 # -*- coding: utf-8 -*-
 import time
+import threading
 
 import mod.server.extraServerApi as serverApi
 import mod.client.extraClientApi as clientApi
 import ModInit.DaFeiMianMod as DaFeiMianMod
+import ServerEvents
+import ClientEvents
 levelId = serverApi.GetLevelId()
 ServerSys = serverApi.GetServerSystemCls()
 ClientSys = clientApi.GetClientSystemCls()
+ClientEventList = []
+ServerEventList = []
+ServerComp = serverApi.GetEngineCompFactory()
+ClientComp = serverApi.GetEngineCompFactory()
+ServerEventDataName = DaFeiMianMod.ModObject.ModName+"ServerEventData"
+ClientEventDataName = DaFeiMianMod.ModObject.ModName+"ClientEventData"
+if ServerComp.CreateModAttr(levelId):
+    ServerComp.CreateModAttr(levelId).SetAttr(ServerEventDataName, [])
+if ClientComp.CreateModAttr(levelId):
+    ClientComp.CreateModAttr(levelId).SetAttr(ClientEventDataName, [])
 
 
-def Event_Server(EventName, func):
-    '''
-    基于服务端的监听原生事件接口，调用该接口可以用来监听一些服务端的原生事件，如：OnCarriedNewItemChangedServerEvent
-
-    :param EventName: 需要监听的原生事件名称
-    :param func: 事件触发后会调用的回调函数
-    :return:
-    '''
-    EventDict = serverApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr("Event_Server")
-    if not EventDict:
-        System_Server("None", "None", EventName, func).ListenEvent(EventName)
-        NewEventDict = {}
-        NewEventDict[EventName] = func
-        serverApi.GetEngineCompFactory().CreateModAttr(levelId).SetAttr("Event_Server", NewEventDict)
-
-    else:
-        if EventName in EventDict:
-            System_Server("None", "None", EventName, func).UnListenEvent(EventName)
-
-        else:
-            System_Server("None", "None", EventName, func).ListenEvent(EventName)
-            EventDict[EventName] = func
-
-
-def Event_Client(EventName, func):
-    '''
-    基于客户端的监听原生事件接口，调用该接口可以用来监听一些客户端的原生事件，如：HoldBeforeClientEvent
-
-    :param EventName: 需要监听的原生事件名称
-    :param func: 事件触发后会调用的回调函数
-    :return:
-    '''
-    EventDict = clientApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr("Event_Client")
-    if not EventDict:
-        System_Client("None", "None", EventName, func).ListenEvent(EventName)
-        NewEventDict = {}
-        NewEventDict[EventName] = func
-        clientApi.GetEngineCompFactory().CreateModAttr(levelId).SetAttr("Event_Client", NewEventDict)
-
-    else:
-        if EventName in EventDict:
-            System_Client("None", "None", EventName, func).UnListenEvent(EventName)
-            System_Client("None", "None", EventName, func).ListenEvent(EventName)
-
-        else:
-            System_Client("None", "None", EventName, func).ListenEvent(EventName)
-            EventDict[EventName] = func
-
-
-class System_Server(serverApi.GetServerSystemCls()):
-    def __init__(self, ns, sys, EventName, Func):
-        super(System_Server, self).__init__(ns, sys)
+class ServerSystem(ServerSys):
+    def __init__(self, ns, sys, Func):
+        super(ServerSystem, self).__init__(ns, sys)
         self.Func = Func
 
     def ListenEvent(self, EventName):
-        self.ListenForEvent(serverApi.GetEngineNamespace(), serverApi.GetEngineSystemName(), EventName, self,
-                            self.ListenBack)
-
-    def ListenCall(self, EventName):
-        self.ListenForEvent(DaFeiMianMod.ModObject.ModName, "Client", EventName, self,
-                            self.ListenBack)
+        self.ListenForEvent(serverApi.GetEngineNamespace(), serverApi.GetEngineSystemName(), EventName, self, self.ListenBack)
 
     def UnListenEvent(self, EventName):
-        EventDict = serverApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr("Event_Server")
-        self.UnListenForEvent(serverApi.GetEngineNamespace(), serverApi.GetEngineSystemName(), EventName, System_Server, EventDict[EventName])
+        self.UnListenForEvent(serverApi.GetEngineNamespace(), serverApi.GetEngineSystemName(), EventName, self, self.ListenBack)
 
     def ListenBack(self, *args):
-        result = self.Func(*args)
-        targetId = "-1"
-        FuncData = serverApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr(targetId)
-        if FuncData == None:
-            serverApi.GetEngineCompFactory().CreateModAttr(levelId).SetAttr(targetId, {})
+        self.Func(*args)
+
+    def ListenBackForCall(self, args):
+        result = self.Func(args['args'])
+        DataId = args['DataId']
+        DataList = ServerComp.CreateModAttr(levelId).GetAttr(ServerEventDataName)
+        NewDataList = []
+        if not DataList:
             return
-        FuncData[str(self.Func.__name__)] = result
-        IdList = serverApi.GetPlayerList()
-        for targetId in IdList:
-            FuncData = clientApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr(targetId)
-            if FuncData == None:
-                clientApi.GetEngineCompFactory().CreateModAttr(levelId).SetAttr(targetId, {})
-                return
-            FuncData[str(self.Func.__name__)] = result
+        for Data in DataList:
+            if Data["DataId"] == DataId:
+                Data["Data"] = result
+            NewDataList.append(Data)
+        ServerComp.CreateModAttr(levelId).SetAttr(ServerEventDataName, NewDataList)
+        SyncServerToClientData()
+
+    def ListenCall(self):
+        self.ListenForEvent(DaFeiMianMod.ModObject.ModName, "Client", self.Func.__name__, self, self.ListenBackForCall)
+
+    def ListenNotify(self, EventName):
+        self.ListenForEvent(DaFeiMianMod.ModObject.ModName, "Client", EventName, self, self.ListenBack)
 
 
-class _System_Server(serverApi.GetServerSystemCls()):
-    def __init__(self, ns, sys, EventName, Func):
-        super(_System_Server, self).__init__(ns, sys)
+class ClientSystem(ClientSys):
+    def __init__(self, ns, sys, Func):
+        super(ClientSystem, self).__init__(ns, sys)
         self.Func = Func
 
     def ListenEvent(self, EventName):
-        self.ListenForEvent(serverApi.GetEngineNamespace(), serverApi.GetEngineSystemName(), EventName, self,
-                            self.ListenBack)
-
-    def ListenCall(self, EventName):
-        self.ListenForEvent(DaFeiMianMod.ModObject.ModName, "_Client", EventName, self,
-                            self.ListenBack)
-
-    def ListenBack(self, *args):
-        result = self.Func(*args)
-        targetId = "-1"
-        FuncData = serverApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr(targetId)
-        if FuncData == None:
-            serverApi.GetEngineCompFactory().CreateModAttr(levelId).SetAttr(targetId, {})
-            return
-        FuncData[str(self.Func.__name__)] = result
-        IdList = serverApi.GetPlayerList()
-        for targetId in IdList:
-            FuncData = clientApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr(targetId)
-            FuncData[str(self.Func.__name__)] = result
-
-
-class System_Client(clientApi.GetClientSystemCls()):
-    def __init__(self, ns, sys, EventName, Func):
-        super(System_Client, self).__init__(ns, sys)
-        self.Func = Func
-
-    def ListenEvent(self, EventName):
-        self.ListenForEvent(clientApi.GetEngineNamespace(), clientApi.GetEngineSystemName(), EventName, self,
-                            self.ListenBack)
-
-    def ListenCall(self, EventName):
-        self.ListenForEvent(DaFeiMianMod.ModObject.ModName, "Server", EventName, self,
-                            self.ListenBack)
+        self.ListenForEvent(clientApi.GetEngineNamespace(), clientApi.GetEngineSystemName(), EventName, self, self.ListenBack)
 
     def UnListenEvent(self, EventName):
-        EventDict = clientApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr("Event_Client")
-        self.UnListenForEvent(clientApi.GetEngineNamespace(), clientApi.GetEngineSystemName(), EventName, System_Client, EventDict[EventName])
+        self.UnListenForEvent(clientApi.GetEngineNamespace(), clientApi.GetEngineSystemName(), EventName, self, self.ListenBack)
 
     def ListenBack(self, *args):
-        result = self.Func(*args)
-        targetId = clientApi.GetLocalPlayerId()
-        FuncData = clientApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr(targetId)
-        if FuncData == None:
+        self.Func(*args)
+
+    def ListenBackForCall(self, args):
+        result = self.Func(args['args'])
+        DataId = args['DataId']
+        DataList = ClientComp.CreateModAttr(levelId).GetAttr(ClientEventDataName)
+        NewDataList = []
+        if not DataList:
             return
-        FuncData[str(self.Func.__name__)] = result
-        SetResult(targetId, FuncData)
+        for Data in DataList:
+            if Data["DataId"] == DataId:
+                Data["Data"] = result
+            NewDataList.append(Data)
+        ClientComp.CreateModAttr(levelId).SetAttr(ClientEventDataName, NewDataList)
+        SyncClientToServerData()
+
+    def ListenCall(self):
+        self.ListenForEvent(DaFeiMianMod.ModObject.ModName, "Server", self.Func.__name__, self, self.ListenBackForCall)
+
+    def ListenNotify(self, EventName):
+        self.ListenForEvent(DaFeiMianMod.ModObject.ModName, "Server", EventName, self, self.ListenBack)
 
 
-class _System_Client(clientApi.GetClientSystemCls()):
-    def __init__(self, ns, sys, EventName, Func):
-        super(_System_Client, self).__init__(ns, sys)
-        self.Func = Func
-
-    def ListenEvent(self, EventName):
-        self.ListenForEvent(clientApi.GetEngineNamespace(), clientApi.GetEngineSystemName(), EventName, self,
-                            self.ListenBack)
-
-    def ListenCall(self, EventName):
-        self.ListenForEvent(DaFeiMianMod.ModObject.ModName, "Server", EventName, self,
-                            self.ListenBack)
-
-    def ListenBack(self, *args):
-        result = self.Func(*args)
-
-
-def Call_Server(targetId, FuncName, event):
+def CallBack(Func, TargetId="-1", IsReturn=True):
     '''
-    基于服务端的单通道通信发信接口，可指定给某一绑定回调函数的客户端发信，需要传入客户端id与目标客户端指定函数名称
+        通信绑定函数，用于绑定目标函数，发信端发信时该接口绑定的函数会被调用，可返回某值
 
-    :param targetId: 接收端目标客户端id
-    :param FuncName: 目标客户端绑定的函数名称
-    :param event: 需要一并发送过去的函数参数
-    :return: 绑定函数的返回值
+        :param Func: 自定义通信的回调函数
+        :param TargetId: 自定义通信的目标id，客户端一般为playerId，服务端则为-1，服务端无需传参
+        :param IsReturn: 是否传回发信端返回值，默认为是
+        :return:
     '''
-    System_Server(DaFeiMianMod.ModObject.ModName, "Server", None, None).NotifyToClient(targetId, FuncName, event)
-    Data = serverApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr(targetId)
-    while(FuncName not in Data):
-        continue
-    return Data[FuncName]
-
-
-def Call_All_Server(FuncName, event):
-    '''
-    基于服务端的多通道通信发信接口，可指定给所有绑定回调函数的客户端发信，仅需传入目标客户端指定函数名称
-
-    :param FuncName: 目标客户端绑定的函数名称
-    :param event: 需要一并发送过去的函数参数
-    :return: 绑定函数的返回值
-    '''
-    result = {}
-    for targetId in serverApi.GetPlayerList():
-        System_Server(DaFeiMianMod.ModObject.ModName, "Server", None, None).NotifyToClient(targetId, FuncName, event)
-        time.sleep(0.02)
-        Data = clientApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr(targetId)
-        while (FuncName not in Data):
-            continue
-        result[targetId] = Data[FuncName]
-    return result
-
-
-def Call_Client(FuncName, event):
-    '''
-    基于客户端的单通道通信发信接口，可指定给绑定回调函数的服务端发信，仅需目标服务端指定函数名称
-
-    :param FuncName: 服务端端绑定的函数名称
-    :param event: 需要一并发送过去的函数参数
-    :return: 绑定函数的返回值
-    '''
-    System_Client(DaFeiMianMod.ModObject.ModName, "Client", None, None).NotifyToServer(FuncName, event)
-    Data = clientApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr("-1")
-    if Data == None or FuncName not in Data:
-        return
-    return Data[FuncName]
-
-
-def CallBack(func, targetId="-1", IsReturn=True):
-    '''
-    通信绑定函数，用于绑定目标函数，发信端发信时该接口绑定的函数会被调用，可返回某值
-
-    :param func: 自定义通信的回调函数
-    :param targetId: 自定义通信的目标id，客户端一般为playerId，服务端则为-1，服务端无需传参
-    :param IsReturn: 是否传回发信端返回值，默认为是
-    :return:
-    '''
-    EventObj = {}
-    EventData = {}
-    EventData[str(func.__name__)] = func
-    EventObj[targetId] = EventData
-    if targetId == "-1":System_Server(DaFeiMianMod.ModObject.ModName, "Server", "None", func).ListenCall(func.__name__)
-    else:System_Client(DaFeiMianMod.ModObject.ModName, "Client", "None", func).ListenCall(func.__name__)
-    if not IsReturn:
-        return
-    if targetId == "-1":
-        Data = serverApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr(targetId)
-        if Data == None:
-            serverApi.GetEngineCompFactory().CreateModAttr(levelId).SetAttr(targetId, {})
-            SetResult(targetId, {})
-
+    if TargetId == "-1":
+        ServerSystem(DaFeiMianMod.ModObject.ModName, "Server", Func).ListenCall()
     else:
-        Data = clientApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr(targetId)
-        if Data == None:
-            clientApi.GetEngineCompFactory().CreateModAttr(levelId).SetAttr(targetId, {})
-            CallBack(SyncData_Client, targetId, False)
-            SetResult(targetId, {})
+        ClientSystem(DaFeiMianMod.ModObject.ModName, "Client", Func).ListenCall()
+
+    if IsReturn:
+        if TargetId == "-1":
+            DataObj = {
+                "DataId": Func.__name__+":"+TargetId,
+                "Data": "NoData"
+            }
+            if not ServerComp.CreateModAttr(levelId).GetAttr(ServerEventDataName):
+                ServerComp.CreateModAttr(levelId).SetAttr(ServerEventDataName, [])
+            ServerComp.CreateModAttr(levelId).GetAttr(ServerEventDataName).append(DataObj)
+            SyncServerToClientData()
+        else:
+            DataObj = {
+                "DataId": Func.__name__ + ":" + TargetId,
+                "Data": "NoData"
+            }
+            if not ClientComp.CreateModAttr(levelId).GetAttr(ClientEventDataName):
+                ClientComp.CreateModAttr(levelId).SetAttr(ClientEventDataName, [])
+            ClientComp.CreateModAttr(levelId).GetAttr(ClientEventDataName).append(DataObj)
+            SyncClientToServerData()
 
 
-def DesEntity_Client(entityId):
+def CallClient(FuncName, TargetId, EventData, BackFunc=None):
+    args = {
+        'args': EventData,
+        'DataId': FuncName+":"+TargetId
+    }
+    DataId = FuncName+":"+TargetId
+    ServerSystem(DaFeiMianMod.ModObject.ModName, "Server", None).NotifyToClient(TargetId, FuncName, args)
+    ClientComp.CreateGame(levelId).AddTimer(0.1, GetClientResult, DataId, BackFunc)
+
+
+def GetClientResult(DataId, BackFunc):
+    DataObjList = ServerComp.CreateModAttr(levelId).GetAttr(ServerEventDataName)
+    Result = None
+    if DataObjList == None:
+        SyncClientToServerData()
+        return
+    for DataObj in DataObjList:
+        if DataObj["DataId"] == DataId:
+            Result = DataObj["Data"]
+    if BackFunc:
+        BackFunc(Result)
+
+
+def CallAllClient(FuncName, EventData):
+    PlayerIdList = serverApi.GetPlayerList()
+    ResultList = []
+
+    for playerId in PlayerIdList:
+        Result = CallClient(FuncName, playerId, EventData)
+        ResultList.append(Result)
+
+    return ResultList
+
+
+def CallServer(FuncName, EventData, BackFunc=None):
+    args = {
+        'args': EventData,
+        'DataId': FuncName + ":" + "-1"
+    }
+    DataId = FuncName + ":" + "-1"
+    ClientSystem(DaFeiMianMod.ModObject.ModName, "Client", None).NotifyToServer(FuncName, args)
+    ClientComp.CreateGame(levelId).AddTimer(0.1, GetServerResult, DataId, BackFunc)
+
+
+def GetServerResult(DataId, BackFunc):
+    DataObjList = ClientComp.CreateModAttr(levelId).GetAttr(ClientEventDataName)
+    Result = None
+    if DataObjList == None:
+        SyncServerToClientData()
+        return
+    for DataObj in DataObjList:
+        if DataObj["DataId"] == DataId:
+            Result = DataObj["Data"]
+    if BackFunc:
+        BackFunc(Result)
+
+
+def ListenServerEvents(EventName, Func):
+    if EventName in ServerEventList:
+        ServerSystem(DaFeiMianMod.ModObject.ModName, "Server", Func).UnListenEvent(EventName)
+        ServerSystem(DaFeiMianMod.ModObject.ModName, "Server", Func).ListenEvent(EventName)
+    else:
+        ServerSystem(DaFeiMianMod.ModObject.ModName, "Server", Func).ListenEvent(EventName)
+        ServerEventList.append(EventName)
+
+
+def ListenClientEvents(EventName, Func):
+    if EventName in ServerEventList:
+        ClientSystem(DaFeiMianMod.ModObject.ModName, "Client", Func).UnListenEvent(EventName)
+        ClientSystem(DaFeiMianMod.ModObject.ModName, "Client", Func).ListenEvent(EventName)
+    else:
+        ClientSystem(DaFeiMianMod.ModObject.ModName, "Client", Func).ListenEvent(EventName)
+        ClientEventList.append(EventName)
+
+
+# 同步双端数据
+# ======================================================================================================================
+def SyncServerToClientData():
+    ServerEventData = ServerComp.CreateModAttr(levelId).GetAttr(ServerEventDataName)
+    ServerSystem(DaFeiMianMod.ModObject.ModName, "Server", None).BroadcastToAllClient(ServerEventDataName, ServerEventData)
+
+
+def SyncFromServerAtClientData(ClientEventData):
+    ClientComp.CreateModAttr(levelId).SetAttr(ClientEventDataName, ClientEventData)
+
+
+ClientSystem(DaFeiMianMod.ModObject.ModName, "Client", SyncFromServerAtClientData).ListenNotify(ServerEventDataName)
+
+
+def SyncClientToServerData():
+    ClientEventData = ClientComp.CreateModAttr(levelId).GetAttr(ClientEventDataName)
+    ClientSystem(DaFeiMianMod.ModObject.ModName, "Client", None).NotifyToServer(ServerEventDataName, ClientEventData)
+
+
+def SyncFromClientAtServerData(ServerEventData):
+    ServerComp.CreateModAttr(levelId).SetAttr(ServerEventDataName, ServerEventData)
+
+
+ServerSystem(DaFeiMianMod.ModObject.ModName, "Server", SyncFromClientAtServerData).ListenNotify(ClientEventDataName)
+# ======================================================================================================================
+
+
+def DesEntityClient(entityId):
     '''
     基于客户端的该接口用于销毁实体，理论上所有实体通用，包括特效类实体
 
     :param entityId: 需要销毁的实体id
     '''
-    System_Client(None, None, None, None).DestroyEntity(entityId)
+    ClientSystem(DaFeiMianMod.ModObject.ModName, "Client", None).DestroyEntity(entityId)
 
 
-def DesEntity_Server(entityId):
+def CreateParticle(Effect, Pos, IsPlay=False):
+    '''
+    基于客户端的该接口用于根据MCS制作的粒子特效配置文件生成粒子特效
+
+    :param Effect: 需要创建的粒子特效配置文件路径，例如："effects/fire.json"
+    :param Pos: 将要创建粒子特效的位置坐标
+    :return particleId 创建的粒子特效实体id
+    '''
+    ParticleId = ClientSystem(DaFeiMianMod.ModObject.ModName, "Client", None).CreateEngineParticle(Effect, Pos)
+    if IsPlay:
+        clientApi.GetEngineCompFactory().CreateParticleControl(ParticleId).Play()
+    return ParticleId
+
+
+def CreateFrame(Effect, Pos=None, Rot=None, Scale=None, IsPlay=False):
+    '''
+    基于客户端的该接口用于根据MCS制作的序列帧特效配置文件生成序列帧特效
+
+    :param Effect: 需要创建的序列帧特效配置文件路径，例如："effects/fire.json"
+    :param Pos: 将要创建序列帧特效的位置坐标
+    :return particleId 创建的序列帧特效实体id
+    '''
+    FrameId = ClientSystem(DaFeiMianMod.ModObject.ModName, "Client", None).CreateEngineSfxFromEditor(Effect, Pos, Rot, Scale)
+    if IsPlay:
+        clientApi.GetEngineCompFactory().CreateFrameAniControl(FrameId).Play()
+    return FrameId
+
+
+def DesEntityServer(entityId):
     '''
     基于服务端的该接口用于销毁实体，理论上所有实体通用，包括特效类实体
 
     :param entityId: 需要销毁的实体id
     '''
-    System_Server(None, None, None, None).DestroyEntity(entityId)
+    ServerSystem(DaFeiMianMod.ModObject.ModName, "Server", None).DestroyEntity(entityId)
 
 
-def CreateEntity_Server(EntityTypeStr, Pos, Rot=(0, 0), DimId=0, IsNpc=False):
+def CreateEntityServer(EntityTypeStr, Pos, Rot=(0, 0), DimId=0, IsNpc=False):
     '''
     基于服务端的该接口用于根据命名标识符来创建实体，可指定实体的生成位置，面向角度（默认为0，0），所处维度id（默认为主世界--0），是否为NPC（默认为否）
     :param EntityTypeStr: 实体的命名标识符
@@ -272,43 +285,4 @@ def CreateEntity_Server(EntityTypeStr, Pos, Rot=(0, 0), DimId=0, IsNpc=False):
     :param IsNpc: 是否为NPC --> False
     :return: 生成的实体id
     '''
-    return System_Server(None, None, None, None).CreateEngineEntityByTypeStr(EntityTypeStr, Pos, Rot, DimId, IsNpc)
-
-
-def SetResult(targetId, Data):
-    '''
-    警告，该函数为不受支持调用的Api内部方法，本应封装隐藏，不过作者懒得做了，所以可以被外部访问到
-
-    但是请注意：如随意调用该函数，可能会造成较严重的未知程序错误，请勿随意调用该函数！！
-
-    '''
-    event = [targetId, Data]
-    _System_Client(DaFeiMianMod.ModObject.ModName, "_Client", None, None).NotifyToServer("SyncData_Server", event)
-
-
-def SyncData_Server(event):
-    '''
-    警告，该函数为不受支持调用的Api内部方法，本应封装隐藏，不过作者懒得做了，所以可以被外部访问到
-
-    但是请注意：如随意调用该函数，可能会造成较严重的未知程序错误，请勿随意调用该函数！！
-
-    '''
-    targetId = event[0]
-    Data = event[1]
-    serverApi.GetEngineCompFactory().CreateModAttr(levelId).SetAttr(targetId, Data)
-    clientApi.GetEngineCompFactory().CreateModAttr(levelId).SetAttr(targetId, Data)
-
-
-def SyncData_Client(event):
-    '''
-    警告，该函数为不受支持调用的Api内部方法，本应封装隐藏，不过作者懒得做了，所以可以被外部访问到
-
-    但是请注意：如随意调用该函数，可能会造成较严重的未知程序错误，请勿随意调用该函数！！
-
-    '''
-    targetId = event[0]
-    Data = event[1]
-    clientApi.GetEngineCompFactory().CreateModAttr(levelId).SetAttr(targetId, Data)
-
-
-_System_Server(DaFeiMianMod.ModObject.ModName, "_Server", "None", SyncData_Server).ListenCall(SyncData_Server.__name__)
+    return ServerSystem(DaFeiMianMod.ModObject.ModName, "Server", None).CreateEngineEntityByTypeStr(EntityTypeStr, Pos, Rot, DimId, IsNpc)
