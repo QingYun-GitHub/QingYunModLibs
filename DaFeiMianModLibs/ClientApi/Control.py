@@ -17,13 +17,13 @@ class Control:
 
 	@staticmethod
 	def GetChosen():
-        comp = clientApi.GetEngineCompFactory().CreateCamera(levelId)
-        return comp.GetChosen()
+		comp = clientApi.GetEngineCompFactory().CreateCamera(levelId)
+		return comp.GetChosen()
 
 	@staticmethod
 	def GetChosenEntity():
-        comp = clientApi.GetEngineCompFactory().CreateCamera(levelId)
-        return comp.GetChosenEntity()
+		comp = clientApi.GetEngineCompFactory().CreateCamera(levelId)
+		return comp.GetChosenEntity()
 
 	@staticmethod
 	def GetHoldTimeThresholdInMs():
@@ -42,7 +42,7 @@ class Control:
 
 	@staticmethod
 	def GetTouchPos():
-        return clientApi.GetTouchPos()
+		return clientApi.GetTouchPos()
 
 	@staticmethod
 	def LockInputVector(inputVector):
@@ -146,5 +146,5 @@ class Control:
 
 	@staticmethod
 	def UnlockInputVector():
-		comp = clientApi.GetEngineCompFactory().CreateActorMotion(playerId)
+		motionComp = clientApi.GetEngineCompFactory().CreateActorMotion(playerId)
 		return motionComp.UnlockInputVector()

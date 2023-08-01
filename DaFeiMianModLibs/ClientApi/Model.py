@@ -103,7 +103,7 @@ class Model:
 	@staticmethod
 	def SetAnim1DControlParam(entityId, modelId, paramName, value):
 		comp = clientApi.GetEngineCompFactory().CreateModel(entityId)
-        return comp.SetAnim1DControlParam(modelId, paramName, value)
+		return comp.SetAnim1DControlParam(modelId, paramName, value)
 
 	@staticmethod
 	def SetAnimLayer(entityId, modelId, aniName, layer):
@@ -142,13 +142,13 @@ class Model:
 
 	@staticmethod
 	def SetExtraUniformValue(entityId, modelId, uniformIndex, vec4data):
-        comp = clientApi.GetEngineCompFactory().CreateModel(entityId)
-        return comp.SetExtraUniformValue(modelId, uniformIndex, vec4data)
+		comp = clientApi.GetEngineCompFactory().CreateModel(entityId)
+		return comp.SetExtraUniformValue(modelId, uniformIndex, vec4data)
 
 	@staticmethod
 	def SetFreeModelAniSpeed(modelId, aniName, speed):
-        comp = clientApi.GetEngineCompFactory().CreateModel(levelId)
-        return comp.SetFreeModelAniSpeed(modelId, aniName, speed)
+		comp = clientApi.GetEngineCompFactory().CreateModel(levelId)
+		return comp.SetFreeModelAniSpeed(modelId, aniName, speed)
 
 	@staticmethod
 	def SetFreeModelBoundingBox(modelId, mins, maxs):

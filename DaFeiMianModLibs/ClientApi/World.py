@@ -42,7 +42,7 @@ class Map:
 
 	@staticmethod
 	def GetLevelId():
-        return clientApi.GetLevelId()
+		return clientApi.GetLevelId()
 
 
 class Entity:

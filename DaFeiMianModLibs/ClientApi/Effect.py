@@ -3,13 +3,6 @@ levelId = clientApi.GetLevelId()
 playerId = clientApi.GetLocalPlayerId()
 
 
-class Generic:
-
-	@staticmethod
-	def DestroyEntity(entityId):
-        return self.DestroyEntity(entityId)
-
-
 class TextPanel:
 
 	@staticmethod
@@ -19,53 +12,53 @@ class TextPanel:
 
 	@staticmethod
 	def RemoveTextBoard(boardId):
-        comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
-        return comp.RemoveTextBoard(boardId)
+		comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
+		return comp.RemoveTextBoard(boardId)
 
 	@staticmethod
 	def SetBoardBackgroundColor(boardId, backgroundColor):
-        comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
-        return comp.SetBoardBackgroundColor(boardId, backgroundColor)
+		comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
+		return comp.SetBoardBackgroundColor(boardId, backgroundColor)
 
 	@staticmethod
 	def SetBoardBindEntity(boardId, bindEntityId, offset, rot):
-        comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
-        return comp.SetBoardBindEntity(boardId, bindEntityId, offset, rot)
+		comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
+		return comp.SetBoardBindEntity(boardId, bindEntityId, offset, rot)
 
 	@staticmethod
 	def SetBoardDepthTest(boardId, depthTest):
-        comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
-        return comp.SetBoardDepthTest(boardId, depthTest)
+		comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
+		return comp.SetBoardDepthTest(boardId, depthTest)
 
 	@staticmethod
 	def SetBoardFaceCamera(boardId, faceCamera):
-        comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
-        return comp.SetBoardFaceCamera(boardId, faceCamera)
+		comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
+		return comp.SetBoardFaceCamera(boardId, faceCamera)
 
 	@staticmethod
 	def SetBoardPos(boardId, pos):
-        comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
-        return comp.SetBoardPos(boardId, pos)
+		comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
+		return comp.SetBoardPos(boardId, pos)
 
 	@staticmethod
 	def SetBoardRot(boardId, rot):
-        comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
-        return comp.SetBoardRot(boardId, rot)
+		comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
+		return comp.SetBoardRot(boardId, rot)
 
 	@staticmethod
 	def SetBoardScale(boardId, scale):
-        comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
-        return comp.SetBoardScale(boardId, scale)
+		comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
+		return comp.SetBoardScale(boardId, scale)
 
 	@staticmethod
 	def SetBoardTextColor(boardId, textColor):
-        comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
-        return comp.SetBoardTextColor(boardId, textColor)
+		comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
+		return comp.SetBoardTextColor(boardId, textColor)
 
 	@staticmethod
 	def SetText(boardId, text):
-        comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
-        return comp.SetText(boardId, text)
+		comp = clientApi.GetEngineCompFactory().CreateTextBoard(levelId)
+		return comp.SetText(boardId, text)
 
 
 class SFX:
@@ -74,15 +67,6 @@ class SFX:
 	def Bind(frameEntityId, bindEntityId, offset, rot):
 		comp = clientApi.GetEngineCompFactory().CreateFrameAniEntityBind(frameEntityId)
 		return comp.Bind(bindEntityId, offset, rot)
-
-	@staticmethod
-	def CreateEngineSfx(path, pos, rot, scale):
-        return self.CreateEngineSfx(path, pos, rot, scale)
-
-
-	@staticmethod
-	def CreateEngineSfxFromEditor(path, pos, rot, scale):
-        return self.CreateEngineSfxFromEditor(path, pos, rot, scale)
 
 	@staticmethod
 	def GetPos(frameEntityId):
@@ -176,10 +160,6 @@ class Particle:
 	def Bind(particleEntityId, bindEntityId, offset, rot, correction):
 		comp = clientApi.GetEngineCompFactory().CreateParticleEntityBind(particleEntityId)
 		return comp.Bind(bindEntityId, offset, rot, correction)
-
-	@staticmethod
-	def CreateEngineParticle(path, pos):
-        return self.CreateEngineParticle(path, pos)
 
 	@staticmethod
 	def GetParticleEmissionRate(particleEntityId):
@@ -285,10 +265,6 @@ class Particle:
 class ModelEffect:
 
 	@staticmethod
-	def CreateEngineEffectBind(path, bindEntity, aniName):
-        return self.CreateEngineEffectBind(path, bindEntity, aniName)
-
-	@staticmethod
 	def Pause(effectEntityId):
 		comp = clientApi.GetEngineCompFactory().CreateEngineEffectBindControl(effectEntityId)
 		return comp.Pause()
@@ -303,8 +279,8 @@ class MicrosoftParticle:
 
 	@staticmethod
 	def BindEntity(par_id, entity_id, bone_name, offset, rotation):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.BindEntity(par_id, entity_id, bone_name, offset, rotation)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.BindEntity(par_id, entity_id, bone_name, offset, rotation)
 
 	@staticmethod
 	def BindModel(par_id, model_id, bone_name, offset, rotation):
@@ -328,150 +304,150 @@ class MicrosoftParticle:
 
 	@staticmethod
 	def Exist(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.Exist(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.Exist(parId)
 
 	@staticmethod
 	def GetActiveDuration(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.GetActiveDuration(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.GetActiveDuration(parId)
 
 	@staticmethod
 	def GetBindingID(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.GetBindingID(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.GetBindingID(parId)
 
 	@staticmethod
 	def GetBindingModelID(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.GetBindingModelID(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.GetBindingModelID(parId)
 
 	@staticmethod
 	def GetDuration(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.GetDuration(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.GetDuration(parId)
 
 	@staticmethod
-	def GetFacingMode(par_id):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.GetFacingMode(parId)
+	def GetFacingMode(parId):
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.GetFacingMode(parId)
 
 	@staticmethod
 	def GetLoopAge(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.GetLoopAge(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.GetLoopAge(parId)
 
 	@staticmethod
 	def GetPos(parId, is_local):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.GetPos(parId, is_local)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.GetPos(parId, is_local)
 
 	@staticmethod
 	def GetRot(parId, is_local):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.GetRot(parId, is_local)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.GetRot(parId, is_local)
 
 	@staticmethod
 	def GetSleepDuration(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.GetSleepDuration(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.GetSleepDuration(parId)
 
 	@staticmethod
 	def GetTimeScale(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.GetTimeScale(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.GetTimeScale(parId)
 
 	@staticmethod
 	def GetVariable(parId, variable_name):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.GetVariable(parId, variable_name)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.GetVariable(parId, variable_name)
 
 	@staticmethod
 	def Hide(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.Hide(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.Hide(parId)
 
 	@staticmethod
 	def IsHiding(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.IsHiding(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.IsHiding(parId)
 
 	@staticmethod
-    def IsPausing()
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.IsPausing(parId)
+	def IsPausing(parId):
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.IsPausing(parId)
 
 	@staticmethod
 	def Pause(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.Pause(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.Pause(parId)
 
 	@staticmethod
 	def Play(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.Play(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.Play(parId)
 
 	@staticmethod
 	def PlayAt(parId, at_second):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.PlayAt(parId, at_second)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.PlayAt(parId, at_second)
 
 	@staticmethod
 	def Remove(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.Remove(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.Remove(parId)
 
 	@staticmethod
 	def RemoveByName(effect_name):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.RemoveByName(effect_name)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.RemoveByName(effect_name)
 
 	@staticmethod
 	def Replay(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.Replay(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.Replay(parId)
 
 	@staticmethod
 	def Resume(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.Resume(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.Resume(parId)
 
 	@staticmethod
 	def SetPos(parId, pos):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.SetPos(parId, pos)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.SetPos(parId, pos)
 
 	@staticmethod
 	def SetRelative(parId, is_relative):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.SetRelative(parId, is_relative)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.SetRelative(parId, is_relative)
 
 	@staticmethod
 	def SetRot(parId, rot):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.SetRot(parId, rot)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.SetRot(parId, rot)
 
 	@staticmethod
 	def SetTimeScale(parId, scale):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.SetTimeScale(parId, scale)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.SetTimeScale(parId, scale)
 
 	@staticmethod
 	def SetVariable(parId, variable_name, value):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.SetVariable(parId, variable_name, value)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.SetVariable(parId, variable_name, value)
 
 	@staticmethod
 	def Show(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.Show(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.Show(parId)
 
 	@staticmethod
 	def Stop(parId):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.Stop(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.Stop(parId)
 
 	@staticmethod
 	def Unbind(parId, keep_position, keep_rotation):
-        comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
-        return comp.Unbind(parId)
+		comp = clientApi.GetEngineCompFactory().CreateParticleSystem(None)
+		return comp.Unbind(parId)

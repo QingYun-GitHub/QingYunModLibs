@@ -16,19 +16,9 @@ class Attribute:
 		return comp.GetPlayerCurLevelExp(playerId)
 
 	@staticmethod
-	def GetPlayerExp(isPercent):
-		comp = clientApi.GetEngineCompFactory().CreateExp(playerId)
-		return comp.GetPlayerExp(isPercent)
-
-	@staticmethod
 	def GetPlayerHunger():
 		comp = clientApi.GetEngineCompFactory().CreatePlayer(playerId)
 		return comp.GetPlayerHunger()
-
-	@staticmethod
-	def GetPlayerTotalExp():
-		comp = clientApi.GetEngineCompFactory().CreateExp(playerId)
-		return comp.GetPlayerTotalExp()
 
 	@staticmethod
 	def Swing():
@@ -193,8 +183,8 @@ class Render:
 
 	@staticmethod
 	def SetPlayerItemInHandVisible(playerId, visible, mode):
-        actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(playerId)
-        return actorRenderComp.SetPlayerItemInHandVisible(visible, mode)
+		actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(playerId)
+		return actorRenderComp.SetPlayerItemInHandVisible(visible, mode)
 
 
 	@staticmethod
@@ -234,6 +224,7 @@ class Camera:
 
 	@staticmethod
 	def AddCameraAroundEntityMotion(eID, angularVelocity, axis, lockDir, stopRad, radius):
+		comp = clientApi.GetEngineCompFactory().CreateCamera(levelId)
 		return comp.AddCameraAroundEntityMotion(eID, angularVelocity, axis, lockDir, stopRad, radius)
 
 	@staticmethod
@@ -263,8 +254,8 @@ class Camera:
 
 	@staticmethod
 	def GetCameraMotions():
-        comp = clientApi.GetEngineCompFactory().CreateCamera(levelId)
-        return comp.GetCameraMotions()
+		comp = clientApi.GetEngineCompFactory().CreateCamera(levelId)
+		return comp.GetCameraMotions()
 
 	@staticmethod
 	def GetCameraOffset():
@@ -297,7 +288,7 @@ class Camera:
 		return comp.GetFpHeight()
 
 	@staticmethod
-	def GetPerspective():
+	def GetPerspective(entityId):
 		comp = clientApi.GetEngineCompFactory().CreatePlayerView(entityId)
 		return comp.GetPerspective()
 
@@ -332,7 +323,7 @@ class Camera:
 		return comp.LockModCameraYaw(enable)
 
 	@staticmethod
-	def LockPerspective(lock):
+	def LockPerspective(entityId, lock):
 		comp = clientApi.GetEngineCompFactory().CreatePlayerView(entityId)
 		return comp.LockPerspective(lock)
 

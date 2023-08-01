@@ -6,54 +6,54 @@ playerId = clientApi.GetLocalPlayerId()
 class BlockEntity:
 
 	@staticmethod
-    def CreateFrameEffectForBlockEntity(pos, path, frameKeyName, effectPos):
-        comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.CreateFrameEffectForBlockEntity(pos, path, frameKeyName, effectPos)
+	def CreateFrameEffectForBlockEntity(pos, path, frameKeyName, effectPos):
+		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.CreateFrameEffectForBlockEntity(pos, path, frameKeyName, effectPos)
 
-    @staticmethod
-    def CreateParticleEffectForBlockEntity(pos, path, particleKeyName, effectPos):
-        comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.CreateParticleEffectForBlockEntity(pos, path, particleKeyName, effectPos)
+	@staticmethod
+	def CreateParticleEffectForBlockEntity(pos, path, particleKeyName, effectPos):
+		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.CreateParticleEffectForBlockEntity(pos, path, particleKeyName, effectPos)
 
-    @staticmethod
-    def GetBlockEntityData(dimension, pos):
-        blockEntitycomp = clientApi.GetEngineCompFactory().CreateBlockEntityData(levelId)
-        return blockEntitycomp.GetBlockEntityData(dimension, pos)
+	@staticmethod
+	def GetBlockEntityData(dimension, pos):
+		blockEntitycomp = clientApi.GetEngineCompFactory().CreateBlockEntityData(levelId)
+		return blockEntitycomp.GetBlockEntityData(dimension, pos)
 
-    @staticmethod
-    def GetBlockEntityData(pos, variableName):
-        comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.GetBlockEntityMolangValue(pos, variableName)
+	@staticmethod
+	def GetBlockEntityData(pos, variableName):
+		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.GetBlockEntityMolangValue(pos, variableName)
 
-    @staticmethod
-    def GetFrameEffectIdInBlockEntity(pos, frameKeyName):
-        comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.GetFrameEffectIdInBlockEntity(pos, frameKeyName)
+	@staticmethod
+	def GetFrameEffectIdInBlockEntity(pos, frameKeyName):
+		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.GetFrameEffectIdInBlockEntity(pos, frameKeyName)
 
-    @staticmethod
-    def GetParticleEffectIdInBlockEntity(pos, particleKeyName):
-        comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.GetParticleEffectIdInBlockEntity(pos, particleKeyName)
+	@staticmethod
+	def GetParticleEffectIdInBlockEntity(pos, particleKeyName):
+		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.GetParticleEffectIdInBlockEntity(pos, particleKeyName)
 
-    @staticmethod
-    def RemoveFrameEffectInBlockEntity(pos, frameKeyName):
-        comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.RemoveFrameEffectInBlockEntity(pos, frameKeyName)
+	@staticmethod
+	def RemoveFrameEffectInBlockEntity(pos, frameKeyName):
+		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.RemoveFrameEffectInBlockEntity(pos, frameKeyName)
 
-    @staticmethod
-    def RemoveParticleEffectInBlockEntity(pos, particleKeyName):
-        comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.RemoveParticleEffectInBlockEntity(pos, particleKeyName)
+	@staticmethod
+	def RemoveParticleEffectInBlockEntity(pos, particleKeyName):
+		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.RemoveParticleEffectInBlockEntity(pos, particleKeyName)
 
-    @staticmethod
-    def SetBlockEntityMolangValue(pos, variableName, value):
-        comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.SetBlockEntityMolangValue(pos, variableName, value)
+	@staticmethod
+	def SetBlockEntityMolangValue(pos, variableName, value):
+		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.SetBlockEntityMolangValue(pos, variableName, value)
 
-    @staticmethod
-    def SetEnableBlockEntityAnimations(pos, enable):
-        comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.SetEnableBlockEntityAnimations(pos, enable)
+	@staticmethod
+	def SetEnableBlockEntityAnimations(pos, enable):
+		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.SetEnableBlockEntityAnimations(pos, enable)
 
 
 class BlockGeometry:
@@ -70,65 +70,66 @@ class BlockGeometry:
 
 	@staticmethod
 	def CombineBlockPaletteToGeometry(blockPalette, geometryName, unsupportedMode):
-        blockGeometryComp = clientApi.GetEngineCompFactory().CreateBlockGeometry(levelId)
-        return blockGeometryComp.CombineBlockPaletteToGeometry(blockPalette, geometryName, unsupportedMode)
+		blockGeometryComp = clientApi.GetEngineCompFactory().CreateBlockGeometry(levelId)
+		return blockGeometryComp.CombineBlockPaletteToGeometry(blockPalette, geometryName, unsupportedMode)
 
 	@staticmethod
 	def EnableActorBlockGeometryTransparent(entityId, geometryName, enable):
-        actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
-        return actorRenderComp.EnableActorBlockGeometryTransparent(geometryName, enable)
+		actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
+		return actorRenderComp.EnableActorBlockGeometryTransparent(geometryName, enable)
 
 	@staticmethod
 	def SetActorBlockGeometryOffset(entityId, geometryName, offset):
-        actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
-        return actorRenderComp.SetActorBlockGeometryOffset(geometryName, offset)
+		actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
+		return actorRenderComp.SetActorBlockGeometryOffset(geometryName, offset)
 
 	@staticmethod
 	def SetActorBlockGeometryRotation(entityId, geometryName, rotation):
-        actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
-        return actorRenderComp.SetActorBlockGeometryRotation(geometryName, rotation)
+		actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
+		return actorRenderComp.SetActorBlockGeometryRotation(geometryName, rotation)
 
 	@staticmethod
 	def SetActorBlockGeometryTransparency(entityId, geometryName, transparent):
-        actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
-        return actorRenderComp.SetActorBlockGeometryTransparency(geometryName, transparent)
+		actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
+		return actorRenderComp.SetActorBlockGeometryTransparency(geometryName, transparent)
 
 
 class BlockPalette:
 
-    @staticmethod
+	@staticmethod
 	def DeleteBlockInBlockPalette(palette, blockName, auxValue):
-        return palette.DeleteBlockInBlockPalette(blockName, auxValue)
+		return palette.DeleteBlockInBlockPalette(blockName, auxValue)
 
 	@staticmethod
 	def DeserializeBlockPalette(dataDict):
-        newPalette = comp.GetBlankBlockPalette()
-        return newPalette.DeserializeBlockPalette(dataDict)
+		comp = clientApi.GetEngineCompFactory().CreateBlock(levelId)
+		newPalette = comp.GetBlankBlockPalette()
+		return newPalette.DeserializeBlockPalette(dataDict)
 
 	@staticmethod
 	def GetBlockCountInBlockPalette(palette, blockName, auxValue):
-        return palette.GetBlockCountInBlockPalette(blockName, auxValue)
+		return palette.GetBlockCountInBlockPalette(blockName, auxValue)
 
 	@staticmethod
 	def GetLocalPosListOfBlocks(palette, blockName, auxValue):
-        return palette.GetLocalPosListOfBlocks(blockName, auxValue)
+		return palette.GetLocalPosListOfBlocks(blockName, auxValue)
 
 	@staticmethod
 	def GetVolumeOfBlockPalette(palette):
-        return palette.GetVolumeOfBlockPalette()
+		return palette.GetVolumeOfBlockPalette()
 
 
 	@staticmethod
 	def ReplaceAirByStructureVoid(palette, enable):
-        return palette.ReplaceAirByStructureVoid(enable)
+		return palette.ReplaceAirByStructureVoid(enable)
 
 	@staticmethod
 	def ReplaceBlockInBlockPalette(palette, newblockName, newBlockAux, oldBlockName, oldBlockAux):
-        return palette.ReplaceBlockInBlockPalette(newblockName, newBlockAux, oldBlockName, oldBlockAux)
+		return palette.ReplaceBlockInBlockPalette(newblockName, newBlockAux, oldBlockName, oldBlockAux)
 
 	@staticmethod
 	def SerializeBlockPalette(sourcePalette):
-        return sourcePalette.SerializeBlockPalette()
+		return sourcePalette.SerializeBlockPalette()
 
 
 class Render:
@@ -140,18 +141,18 @@ class Render:
 
 	@staticmethod
 	def ChangeBlockTextures(blockName, tileName, texturePath):
-        comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.ChangeBlockTextures(blockName, tileName, texturePath)
+		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.ChangeBlockTextures(blockName, tileName, texturePath)
 
 	@staticmethod
 	def DeleteClientDropItemEntity(entityId):
-        comp = clientApi.GetEngineCompFactory().CreateItem(levelId)
-        return comp.DeleteClientDropItemEntity(entityId)
+		comp = clientApi.GetEngineCompFactory().CreateItem(levelId)
+		return comp.DeleteClientDropItemEntity(entityId)
 
 	@staticmethod
 	def GetBlockTextures(blockName, face):
-        comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.GetBlockTextures(blockName, face)
+		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.GetBlockTextures(blockName, face)
 
 	@staticmethod
 	def GetClientDropItemEntityIdList():

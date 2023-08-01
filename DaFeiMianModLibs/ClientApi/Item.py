@@ -7,13 +7,13 @@ class Item:
 
 	@staticmethod
 	def ChangeArmorTextures(armorIdentifier, texturesDict, uiIconTexture):
-        comp = clientApi.GetEngineCompFactory().CreateActorRender(levelId)
-        return comp.ChangeArmorTextures(armorIdentifier, texturesDict, uiIconTexture)
+		comp = clientApi.GetEngineCompFactory().CreateActorRender(levelId)
+		return comp.ChangeArmorTextures(armorIdentifier, texturesDict, uiIconTexture)
 
 	@staticmethod
 	def ChangeItemTexture(identifier, texturePath):
-        comp = clientApi.GetEngineCompFactory().CreateItem(levelId)
-        return comp.ChangeItemTexture(identifier, texturePath)
+		comp = clientApi.GetEngineCompFactory().CreateItem(levelId)
+		return comp.ChangeItemTexture(identifier, texturePath)
 
 	@staticmethod
 	def GetItemBasicInfo(itemName, auxValue, isEnchanted):

@@ -7,8 +7,8 @@ class EngineType:
 
 	@staticmethod
 	def GetEngineType(entityId):
-        comp = clientApi.GetEngineCompFactory().CreateEngineType(entityId)
-        return comp.GetEngineType()
+		comp = clientApi.GetEngineCompFactory().CreateEngineType(entityId)
+		return comp.GetEngineType()
 
 	@staticmethod
 	def GetEngineTypeStr(entityId):
@@ -18,10 +18,10 @@ class EngineType:
 
 class Aux:
 
-    @staticmethod
-    def GetAuxValue(entityId):
-        comp = clientApi.GetEngineCompFactory().CreateAuxValue(entityId)
-        return comp.GetAuxValue()
+	@staticmethod
+	def GetAuxValue(entityId):
+		comp = clientApi.GetEngineCompFactory().CreateAuxValue(entityId)
+		return comp.GetAuxValue()
 
 
 class Attribute:
@@ -42,19 +42,9 @@ class Attribute:
 		return comp.GetBodyRot()
 
 	@staticmethod
-	def GetCurrentAirSupply(entityId):
-		comp = clientApi.GetEngineCompFactory().CreateBreath(entityId)
-		return comp.GetCurrentAirSupply()
-
-	@staticmethod
 	def GetFootPos(entityId):
 		comp = clientApi.GetEngineCompFactory().CreatePos(entityId)
 		return comp.GetFootPos()
-
-	@staticmethod
-	def GetMaxAirSupply(entityId):
-		comp = clientApi.GetEngineCompFactory().CreateBreath(entityId)
-		return comp.GetMaxAirSupply()
 
 	@staticmethod
 	def GetName(entityId):
@@ -68,8 +58,8 @@ class Attribute:
 
 	@staticmethod
 	def GetRiderId(playerId):
-        comp = clientApi.GetEngineCompFactory().CreateGame(levelId)
-        return comp.GetRiderId(playerId)
+		comp = clientApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.GetRiderId(playerId)
 
 	@staticmethod
 	def GetRot(entityId):
@@ -83,8 +73,8 @@ class Attribute:
 
 	@staticmethod
 	def LockLocalPlayerRot(entityId, lock):
-        comp = clientApi.GetEngineCompFactory().CreateRot(entityId)
-        return comp.LockLocalPlayerRot(lock)
+		comp = clientApi.GetEngineCompFactory().CreateRot(entityId)
+		return comp.LockLocalPlayerRot(lock)
 
 	@staticmethod
 	def SetPlayerLookAtPos(targetPos, pitchStep, yawStep, blockInput):
@@ -126,8 +116,8 @@ class Action:
 
 	@staticmethod
 	def SetMotion(motion):
-        motionComp = clientApi.GetEngineCompFactory().CreateActorMotion(playerId)
-        motionComp.SetMotion(motion)
+		motionComp = clientApi.GetEngineCompFactory().CreateActorMotion(playerId)
+		motionComp.SetMotion(motion)
 
 
 class Effect:
@@ -157,8 +147,8 @@ class Render:
 
 	@staticmethod
 	def AddActorBlockGeometry(entityId, geometryName, offset, rotation):
-        actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
-        return actorRenderComp.AddActorBlockGeometry(geometryName, offset, rotation)
+		actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
+		return actorRenderComp.AddActorBlockGeometry(geometryName, offset, rotation)
 
 	@staticmethod
 	def AddActorGeometry(actorIdentifier, geometryKey, geometryName):
@@ -207,8 +197,8 @@ class Render:
 
 	@staticmethod
 	def ClearActorBlockGeometry(entityId):
-        actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
-        return actorRenderComp.ClearActorBlockGeometry()
+		actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
+		return actorRenderComp.ClearActorBlockGeometry()
 
 	@staticmethod
 	def CopyActorGeometryFromPlayer(fromPlayerId, toActorIdentifier, fromGeometryKey, newGeometryKey):
@@ -227,8 +217,8 @@ class Render:
 
 	@staticmethod
 	def DeleteActorBlockGeometry(entityId, geometryName):
-        actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
-        return actorRenderComp.DeleteActorBlockGeometry(geometryName)
+		actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
+		return actorRenderComp.DeleteActorBlockGeometry(geometryName)
 
 	@staticmethod
 	def GetActorRenderParams(entityId, paramTypeStr):
@@ -246,7 +236,7 @@ class Render:
 		return comp.RebuildActorRender(actorIdentifier)
 
 	@staticmethod
-	def RemoveActorAnimationController(actorIdentifier, animationControllKey):
+	def RemoveActorAnimationController(entityId, actorIdentifier, animationControllKey):
 		comp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
 		return comp.RemoveActorAnimationController(actorIdentifier, animationControllKey)
 
@@ -272,13 +262,13 @@ class Render:
 
 	@staticmethod
 	def SetActorAllBlockGeometryVisible(entityId, visible):
-        actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
-        return actorRenderComp.SetActorAllBlockGeometryVisible(visible)
+		actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
+		return actorRenderComp.SetActorAllBlockGeometryVisible(visible)
 
 	@staticmethod
 	def SetActorBlockGeometryVisible(entityId, geometryName, visible):
-        actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
-        return actorRenderComp.SetActorBlockGeometryVisible(geometryName, visible)
+		actorRenderComp = clientApi.GetEngineCompFactory().CreateActorRender(entityId)
+		return actorRenderComp.SetActorBlockGeometryVisible(geometryName, visible)
 
 	@staticmethod
 	def SetAlwaysShowName(entityId, show):
@@ -330,17 +320,17 @@ class ExtraAttribute:
 
 
 	@staticmethod
-	def GetAttr(paramName, defaultValue):
+	def GetAttr(entityId, paramName, defaultValue):
 		comp = clientApi.GetEngineCompFactory().CreateModAttr(entityId)
 		return comp.GetAttr(paramName, defaultValue)
 
 	@staticmethod
 	def RegisterUpdateFunc(entityId, paramName, func):
-        comp = clientApi.GetEngineCompFactory().CreateModAttr(entityId)
-        return comp.RegisterUpdateFunc(paramName, func)
+		comp = clientApi.GetEngineCompFactory().CreateModAttr(entityId)
+		return comp.RegisterUpdateFunc(paramName, func)
 
 	@staticmethod
-	def SetAttr(paramName, paramValue, needRestore):
+	def SetAttr(entityId, paramName, paramValue, needRestore=False):
 		comp = clientApi.GetEngineCompFactory().CreateModAttr(entityId)
 		return comp.SetAttr(paramName, paramValue, needRestore)
 

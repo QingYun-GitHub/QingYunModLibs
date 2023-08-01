@@ -40,8 +40,8 @@ class Camera:
 
 	@staticmethod
 	def CameraGetClickModel():
-        virtualWorldComp = clientApi.GetEngineCompFactory().CreateVirtualWorld(levelId)
-        return virtualWorldComp.CameraGetClickModel()
+		virtualWorldComp = clientApi.GetEngineCompFactory().CreateVirtualWorld(levelId)
+		return virtualWorldComp.CameraGetClickModel()
 
 	@staticmethod
 	def CameraGetFov():
