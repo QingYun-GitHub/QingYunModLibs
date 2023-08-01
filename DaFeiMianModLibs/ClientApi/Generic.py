@@ -1,177 +1,174 @@
 import mod.client.extraClientApi as clientApi
+levelId = clientApi.GetLevelId()
+playerId = clientApi.GetLocalPlayerId()
 
 class LocalDevice:
 
-    @staticmethod
-    def IP():
-        return clientApi.GetIP()
-        
-    @staticmethod
-    def Platform():
-        return clientApi.GetPlatform()
+	@staticmethod
+	def GetIP():
+		return clientApi.GetIP()
+
+	@staticmethod
+	def GetPlatform():
+		return clientApi.GetPlatform()
 
 
-class LocalDate:
+class localStorage:
 
-    @staticmethod
-    def Get(Name, isGlobal):
-        comp = clientApi.GetEngineCompFactory().CreateConfigClient(clientApi.GetLevelId())
-        return comp.GetConfigData(Name, isGlobal)
+	@staticmethod
+	def GetConfigData(configName, isGlobal):
+		comp = clientApi.GetEngineCompFactory().CreateConfigClient(levelId)
+		return comp.GetConfigData(configName, isGlobal)
 
-    @staticmethod
-    def Set(Name, Date, isGlobal):
-        comp = clientApi.GetEngineCompFactory().CreateConfigClient(clientApi.GetLevelId())
-        return comp.SetConfigData(Name, Date, isGlobal)
+	@staticmethod
+	def SetConfigData(configName, value, isGlobal):
+		comp = clientApi.GetEngineCompFactory().CreateConfigClient(levelId)
+		return comp.SetConfigData(configName, value, isGlobal)
 
 
 class Math:
 
-    @staticmethod
-    def ToDir(Rot):
-        return clientApi.GetDirFromRot(Rot)
+	@staticmethod
+	def GetDirFromRot(rot):
+		return clientApi.GetDirFromRot(rot)
 
-    @staticmethod
-    def GetLocalPos(Pos, EntityId):
-        return clientApi.GetLocalPosFromWorld(Pos, EntityId)
+	@staticmethod
+	def GetLocalPosFromWorld(pos, entityId):
+		return clientApi.GetLocalPosFromWorld(pos, entityId)
 
-    @staticmethod
-    def ToRot(Dir):
-        return clientApi.GetRotFromDir(Dir)
+	@staticmethod
+	def GetRotFromDir(dir):
+		return clientApi.GetRotFromDir(dir)
 
-    @staticmethod
-    def GetWorldPos(Pos, EntityId):
-        return clientApi.GetWorldPosFromLocal(Pos, EntityId)
-
-
-class Tools:
-
-    @staticmethod
-    def AddReTimer(delay, func, date):
-        comp = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId())
-        return comp.AddRepeatedTimer(delay, func, date) #
-
-    @staticmethod
-    def AddTimer(delay, func, date):
-        comp = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId())
-        return comp.AddTimer(delay, func, date) #
-
-    @staticmethod
-    def CancelTimer(timer):
-        comp = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId())
-        comp.CancelTimer(timer)
-
-    @staticmethod
-    def CheckName(name):
-        comp = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId())
-        return comp.CheckNameValid(name)
-
-    @staticmethod
-    def CheckName(name):
-        comp = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId())
-        return comp.CheckNameValid(name)
-
-    @staticmethod
-    def CheckWords(words):
-        comp = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId())
-        return comp.CheckWordsValid(words)
-
-    @staticmethod
-    def GetChinese(langStr):
-        comp = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId())
-        return comp.GetChinese(langStr)
-
-    @staticmethod
-    def Fps():
-        comp = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId())
-        return comp.GetFps()
-    
-    @staticmethod
-    def Enum():
-        return clientApi.GetMinecraftEnum()
-
-    @staticmethod
-    def Json(path):
-        return clientApi.GetModConfigJson(path)
-
-    @staticmethod
-    def StartCoroutine(iterOrFunc, callback):
-        return clientApi.StartCoroutine(iterOrFunc, callback)
-
-    @staticmethod
-    def StopCoroutine(generator):
-        return clientApi.StopCoroutine(generator)
+	@staticmethod
+	def GetWorldPosFromLocal(pos, entityId):
+		return clientApi.GetWorldPosFromLocal(pos, entityId)
 
 
-class Debug:
+class Tool:
 
-    @staticmethod
-    def GetEnableReconnectNetgame():
-        return clientApi.GetEnableReconnectNetgame()
+	@staticmethod
+	def AddRepeatedTimer(delay, func, args):
+		comp = clientApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.AddRepeatedTimer(delay, func, args)
 
-    @staticmethod
-    def GetKeepResourceWhenTransfer():
-        return clientApi.GetKeepResourceWhenTransfer()
+	@staticmethod
+	def AddTimer(delay, func, args):
+		comp = clientApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.AddTimer(delay, func, args)
 
-    @staticmethod
-    def GetMcpModLogCanPostDump():
-        return clientApi.GetMcpModLogCanPostDump()
+	@staticmethod
+	def CancelTimer(timer):
+		comp = clientApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.CancelTimer(timer)
 
-    @staticmethod
-    def GetResourceFastload():
-        return clientApi.GetResourceFastload()
+	@staticmethod
+	def CheckNameValid(name):
+		comp = clientApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.CheckNameValid(name)
 
-    @staticmethod
-    def PostMcpModDump(msg):
-        return clientApi.PostMcpModDump(msg)
+	@staticmethod
+	def CheckWordsValid(words):
+		comp = clientApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.CheckWordsValid(words)
 
-    @staticmethod
-    def ReloadAllMaterials():
-        return clientApi.ReloadAllMaterials()
+	@staticmethod
+	def GetChinese(langStr):
+		comp = clientApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.GetChinese(langStr)
 
-    @staticmethod
-    def ReloadAllShaders():
-        return clientApi.ReloadAllShaders()
+	@staticmethod
+	def GetFps():
+		comp = clientApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.GetFps()
 
-    @staticmethod
-    def ReloadOneShader(shaderName):
-        return clientApi.ReloadOneShader(shaderName)
+	@staticmethod
+	def GetMinecraftEnum():
+		return clientApi.GetMinecraftEnum()
 
-    @staticmethod
-    def SetEnableReconnectNetgame(keep):
-        return clientApi.SetEnableReconnectNetgame(keep)
+	@staticmethod
+	def GetModConfigJson(path):
+		return clientApi.GetModConfigJson(path)
 
-    @staticmethod
-    def SetKeepResourceWhenTransfer(keep):
-        return clientApi.SetKeepResourceWhenTransfer(keep)
+	@staticmethod
+	def StartCoroutine(iterOrFunc, callback):
+		return clientApi.StartCoroutine(iterOrFunc, callback)
 
-    @staticmethod
-    def SetMcpModLogCanPostDump(keep):
-        return clientApi.SetMcpModLogCanPostDump(keep)
+	@staticmethod
+	def StopCoroutine(iter):
+		return clientApi.StopCoroutine(iter)
 
-    @staticmethod
-    def SetResourceFastload(fastload):
-        return clientApi.SetResourceFastload(fastload)
 
-    @staticmethod
-    def StartMemProfile():
-        return clientApi.StartMemProfile()
+class DeBug:
 
-    @staticmethod
-    def StartMultiProfile():
-        return clientApi.StopMultiProfile()
+	@staticmethod
+	def GetEnableReconnectNetgame():
+		return clientApi.GetEnableReconnectNetgame()
 
-    @staticmethod
-    def StartProfile():
-        return clientApi.StartProfile()
+	@staticmethod
+	def GetKeepResourceWhenTransfer():
+		return clientApi.GetKeepResourceWhenTransfer()
 
-    @staticmethod
-    def StopMemProfile(fileName="flamegraph.svg"):
-        return clientApi.StopMemProfile(fileName)
+	@staticmethod
+	def GetMcpModLogCanPostDump():
+		return clientApi.GetMcpModLogCanPostDump()
 
-    @staticmethod
-    def StopMultiProfile(fileName="flamegraph.svg"):
-        return clientApi.StopMultiProfile(fileName)
+	@staticmethod
+	def GetResourceFastload():
+		return clientApi.GetResourceFastload()
 
-    @staticmethod
-    def StopProfile(fileName="flamegraph.svg"):
-        return clientApi.StopProfile(fileName)
+	@staticmethod
+	def PostMcpModDump(msg, *args, **kwargs):
+		return clientApi.PostMcpModDump(msg, *args, **kwargs)
+
+	@staticmethod
+	def ReloadAllMaterials():
+		return clientApi.ReloadAllMaterials()
+
+	@staticmethod
+	def ReloadAllShaders():
+		return clientApi.ReloadAllShaders()
+
+	@staticmethod
+	def ReloadOneShader(shaderName):
+		return clientApi.ReloadOneShader(shaderName)
+
+	@staticmethod
+	def SetEnableReconnectNetgame(keep):
+		return clientApi.SetEnableReconnectNetgame(keep)
+
+	@staticmethod
+	def SetKeepResourceWhenTransfer(keep):
+		return clientApi.SetKeepResourceWhenTransfer(keep)
+
+	@staticmethod
+	def SetMcpModLogCanPostDump(canPost):
+		return clientApi.SetMcpModLogCanPostDump(canPost)
+
+	@staticmethod
+	def SetResourceFastload(fastload):
+		return clientApi.SetResourceFastload(fastload)
+
+	@staticmethod
+	def StartMemProfile():
+		return clientApi.StartMemProfile()
+
+	@staticmethod
+	def StartMultiProfile():
+		return clientApi.StartMultiProfile()
+
+	@staticmethod
+	def StartProfile():
+		return clientApi.StartProfile()
+
+	@staticmethod
+	def StopMemProfile(fileName):
+		return clientApi.StopMemProfile(fileName)
+
+	@staticmethod
+	def StopMultiProfile(fileName):
+		return clientApi.StopMultiProfile(fileName)
+
+	@staticmethod
+	def StopProfile(fileName):
+		return clientApi.StopProfile(fileName)
