@@ -25,7 +25,7 @@ class Item:
 		return comp.GetItemBasicInfo(itemName, auxValue, isEnchanted)
 
 	@staticmethod
-	def GetItemDefenceAngle(posType, slotPos):
+	def GetItemDefenceAngle(playerId, posType, slotPos):
 		comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
 		return comp.GetItemDefenceAngle(posType, slotPos)
 
@@ -61,18 +61,18 @@ class Item:
 
 	@staticmethod
 	def RemoveItemLayer(playerId, itemDict, layer):
-        comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
-        return comp.RemoveItemLayer(itemDict, layer)
+		comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
+		return comp.RemoveItemLayer(itemDict, layer)
 
 	@staticmethod
 	def SetAttackDamage(playerId, itemDict, attackDamage):
-        comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
-        return comp.SetAttackDamage(itemDict, attackDamage)
+		comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
+		return comp.SetAttackDamage(itemDict, attackDamage)
 
 	@staticmethod
 	def SetCustomName(playerId, itemDict, name):
-        comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
-        return comp.SetCustomName(itemDict, name)
+		comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
+		return comp.SetCustomName(itemDict, name)
 
 	@staticmethod
 	def SetItemDefenceAngle(playerId, posType, slotPos, angleLeft, angleRight):
@@ -86,8 +86,8 @@ class Item:
 
 	@staticmethod
 	def SetItemLayer(playerId, itemDict, layer, texture):
-        comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
-        return comp.SetItemLayer(itemDict, layer, texture)
+		comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
+		return comp.SetItemLayer(itemDict, layer, texture)
 
 	@staticmethod
 	def SetItemMaxDurability(playerId, posType, slotPos, maxDurability, isUserData):
@@ -96,21 +96,20 @@ class Item:
 
 	@staticmethod
 	def SetItemTierLevel(playerId, itemDict, level):
-        comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
-        return comp.SetItemTierLevel(itemDict, level)
+		comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
+		return comp.SetItemTierLevel(itemDict, level)
 
 	@staticmethod
 	def SetItemTierSpeed(playerId, itemDict, speed):
-        comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
-        return comp.SetItemTierSpeed(itemDict, speed)
+		comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
+		return comp.SetItemTierSpeed(itemDict, speed)
 
 	@staticmethod
 	def SetMaxStackSize(playerId, itemDict, maxStackSize):
-        comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
-        return comp.SetMaxStackSize(itemDict, maxStackSize)
+		comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
+		return comp.SetMaxStackSize(itemDict, maxStackSize)
 
 	@staticmethod
 	def SetShearsDestoryBlockSpeed(entityId, blockName, speed):
 		comp = serverApi.GetEngineCompFactory().CreateItem(entityId)
 		return comp.SetShearsDestoryBlockSpeed(blockName, speed)
-

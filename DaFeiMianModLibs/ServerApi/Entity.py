@@ -6,8 +6,8 @@ class EngineType:
 
 	@staticmethod
 	def GetEngineType(entityId):
-        comp = serverApi.GetEngineCompFactory().CreateEngineType(entityId)
-        return comp.GetEngineType()
+		comp = serverApi.GetEngineCompFactory().CreateEngineType(entityId)
+		return comp.GetEngineType()
 
 	@staticmethod
 	def GetEngineTypeStr(entityId):
@@ -17,10 +17,10 @@ class EngineType:
 
 class Aux:
 
-    @staticmethod
-    def GetAuxValue(entityId):
-        comp = serverApi.GetEngineCompFactory().CreateAuxValue(entityId)
-        return comp.GetAuxValue()
+	@staticmethod
+	def GetAuxValue(entityId):
+		comp = serverApi.GetEngineCompFactory().CreateAuxValue(entityId)
+		return comp.GetAuxValue()
 
 
 class Attribute:
@@ -241,12 +241,12 @@ class Action:
 
 	@staticmethod
 	def GetCustomGoalCls():
-        return serverApi.GetCustomGoalCls()
+		return serverApi.GetCustomGoalCls()
 
 	@staticmethod
 	def GetEntityMotions(entityId):
-        motionComp = serverApi.GetEngineCompFactory().CreateActorMotion(entityId)
-        return motionComp.GetEntityMotions()
+		motionComp = serverApi.GetEngineCompFactory().CreateActorMotion(entityId)
+		return motionComp.GetEntityMotions()
 
 	@staticmethod
 	def GetMotion(entityId):
@@ -366,8 +366,8 @@ class Action:
 
 	@staticmethod
 	def SetEntityTamed(playerId, tamedId):
-        tameComp = serverApi.GetEngineCompFactory().CreateTame(tamedId)
-        return tameComp.SetEntityTamed(playerId,tamedId)
+		tameComp = serverApi.GetEngineCompFactory().CreateTame(tamedId)
+		return tameComp.SetEntityTamed(playerId,tamedId)
 
 	@staticmethod
 	def SetJumpPower(entityId, jumpPower):
@@ -381,13 +381,13 @@ class Action:
 
 	@staticmethod
 	def SetMotion(entityId, motion):
-        motionComp = serverApi.GetEngineCompFactory().CreateActorMotion(entityId)
-        return motionComp.SetMotion(motion)
+		motionComp = serverApi.GetEngineCompFactory().CreateActorMotion(entityId)
+		return motionComp.SetMotion(motion)
 
 	@staticmethod
 	def SetMoveSetting(entityId, pos, speed, maxIteration, callback):
-        comp = serverApi.GetEngineCompFactory().CreateMoveTo(entityId)
-        return comp.SetMoveSetting(pos,speed,maxIteration,callback)
+		comp = serverApi.GetEngineCompFactory().CreateMoveTo(entityId)
+		return comp.SetMoveSetting(pos,speed,maxIteration,callback)
 
 	@staticmethod
 	def SetPersistence(entityId, isPersistent):
@@ -489,62 +489,62 @@ class ExtraData:
 
 	@staticmethod
 	def CleanExtraData(ID, key):
-        entitycomp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
-        return entitycomp.CleanExtraData(key)
+		entitycomp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
+		return entitycomp.CleanExtraData(key)
 
 	@staticmethod
 	def GetExtraData(ID, key):
-        comp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
-        return comp.GetExtraData(key)
+		comp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
+		return comp.GetExtraData(key)
 
 	@staticmethod
 	def GetWholeExtraData(ID):
-        comp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
-        return comp.GetWholeExtraData()
+		comp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
+		return comp.GetWholeExtraData()
 
 	@staticmethod
 	def SaveExtraData(ID):
-        entitycomp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
-        return entitycomp.SaveExtraData()
+		entitycomp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
+		return entitycomp.SaveExtraData()
 
 	@staticmethod
 	def SetExtraData(ID, key, value, autoSave):
-        entitycomp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
-        return entitycomp.SetExtraData(key,value,autoSave)
+		entitycomp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
+		return entitycomp.SetExtraData(key,value,autoSave)
 
 
 class Projectile:
 
-    @staticmethod
-    def GetSourceEntityId(entityId):
-        comp = serverApi.GetEngineCompFactory().CreateBulletAttributes(entityId)
-        return comp.GetSourceEntityId()
+	@staticmethod
+	def GetSourceEntityId(entityId):
+		comp = serverApi.GetEngineCompFactory().CreateBulletAttributes(entityId)
+		return comp.GetSourceEntityId()
 
 
 class ExperienceBall:
 
-    @staticmethod
-    def GetOrbExperience(entityId):
-        comp = serverApi.GetEngineCompFactory().CreateExp(entityId)
-        return comp.GetOrbExperience()
+	@staticmethod
+	def GetOrbExperience(entityId):
+		comp = serverApi.GetEngineCompFactory().CreateExp(entityId)
+		return comp.GetOrbExperience()
 
-    @staticmethod
-    def SetOrbExperience(entityId, exp):
-        comp = serverApi.GetEngineCompFactory().CreateExp(entityId)
-        return comp.SetOrbExperience(exp)
+	@staticmethod
+	def SetOrbExperience(entityId, exp):
+		comp = serverApi.GetEngineCompFactory().CreateExp(entityId)
+		return comp.SetOrbExperience(exp)
 
 
 class OfficialPartner:
 
-    @staticmethod
-    def Disable():
-        comp = serverApi.GetEngineCompFactory().CreatePet(levelId)
-        return comp.Disable()
+	@staticmethod
+	def Disable():
+		comp = serverApi.GetEngineCompFactory().CreatePet(levelId)
+		return comp.Disable()
 
-    @staticmethod
-    def Enable():
-        comp = serverApi.GetEngineCompFactory().CreatePet(levelId)
-        return comp.Enable()
+	@staticmethod
+	def Enable():
+		comp = serverApi.GetEngineCompFactory().CreatePet(levelId)
+		return comp.Enable()
 
 
 class Tag:

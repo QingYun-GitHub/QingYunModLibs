@@ -37,7 +37,7 @@ class Attribute:
 
 
 	@staticmethod
-	def GetPlayerHunger():
+	def GetPlayerHunger(playerId):
 		comp = serverApi.GetEngineCompFactory().CreatePlayer(playerId)
 		return comp.GetPlayerHunger()
 
@@ -136,7 +136,7 @@ class Action:
 
 	@staticmethod
 	def AddPlayerAroundEntityMotion(playerId, angularVelocity, axis, lockDir, stopRad, radius):
-        motionComp = serverApi.GetEngineCompFactory().CreateActorMotion(playerId)
+		motionComp = serverApi.GetEngineCompFactory().CreateActorMotion(playerId)
 		return motionComp.AddPlayerAroundEntityMotion(playerId, angularVelocity, axis, lockDir, stopRad, radius)
 
 	@staticmethod
@@ -180,7 +180,7 @@ class Action:
 		return comp.GetIsBlocking()
 
 	@staticmethod
-	def GetPlayerExhaustionRatioByType(types):
+	def GetPlayerExhaustionRatioByType(playerId, types):
 		comp = serverApi.GetEngineCompFactory().CreatePlayer(playerId)
 		return comp.GetPlayerExhaustionRatioByType(types)
 
@@ -216,17 +216,17 @@ class Action:
 
 	@staticmethod
 	def PlayerDestoryBlock(playerId, pos, particle, sendInv):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
 		return comp.PlayerDestoryBlock(pos, particle, sendInv)
 
 	@staticmethod
 	def PlayerUseItemToEntity(playerId, entityId):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
 		return comp.PlayerUseItemToEntity(entityId)
 
 	@staticmethod
 	def PlayerUseItemToPos(playerId, pos, posType, slotPos, facing):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId) 
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
 		return comp.PlayerUseItemToPos(pos, posType, slotPos, facing)
 
 	@staticmethod
@@ -256,8 +256,8 @@ class Action:
 
 	@staticmethod
 	def SetPlayerMotion(entityId, motion):
-        motionComp = serverApi.GetEngineCompFactory().CreateActorMotion(entityId)
-        return motionComp.SetPlayerMotion(motion)
+		motionComp = serverApi.GetEngineCompFactory().CreateActorMotion(entityId)
+		return motionComp.SetPlayerMotion(motion)
 
 	@staticmethod
 	def SetPlayerMovable(playerId, isMovable):
@@ -369,8 +369,8 @@ class Knapsack:
 
 	@staticmethod
 	def SetPlayerAllItems(playerId, itemsDictMap):
-        comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
-        return comp.SetPlayerAllItems(itemsDictMap)
+		comp = serverApi.GetEngineCompFactory().CreateItem(playerId)
+		return comp.SetPlayerAllItems(itemsDictMap)
 
 	@staticmethod
 	def SpawnItemToPlayerCarried(itemDict, playerId):

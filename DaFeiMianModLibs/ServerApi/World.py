@@ -12,7 +12,7 @@ class Map:
 	@staticmethod
 	def CheckBlockToPos(fromPos, toPos, dimensionId):
 		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-		return comp.CheckBlockToPos(fromPos, toPos, dimensionId):
+		return comp.CheckBlockToPos(fromPos, toPos, dimensionId)
 
 	@staticmethod
 	def CheckChunkState(dimension, pos):
@@ -41,8 +41,8 @@ class Map:
 
 	@staticmethod
 	def DetectStructure(pattern, defines, touchPos, pos, dimensionId):
-        comp = serverApi.GetEngineCompFactory().CreatePortal(levelId)
-        return comp.DetectStructure(None, pattern, defines, touchPos, pos, dimensionId)
+		comp = serverApi.GetEngineCompFactory().CreatePortal(levelId)
+		return comp.DetectStructure(None, pattern, defines, touchPos, pos, dimensionId)
 
 	@staticmethod
 	def DoTaskOnChunkAsync(dimensionId, posMin, posMax, callback):
@@ -66,8 +66,8 @@ class Map:
 
 	@staticmethod
 	def GetChunkEntites(dimension, pos):
-        comp = serverApi.GetEngineCompFactory().CreateChunkSource(levelId)
-        return comp.GetChunkEntites(dimension, pos)
+		comp = serverApi.GetEngineCompFactory().CreateChunkSource(levelId)
+		return comp.GetChunkEntites(dimension, pos)
 
 	@staticmethod
 	def GetChunkMaxPos(chunkPos):
@@ -205,15 +205,6 @@ class Map:
 
 
 class Entity:
-
-	@staticmethod
-	def CreateEngineEntityByTypeStr(engineTypeStr, pos, rot, dimensionId, isNpc):
-		return self.CreateEngineEntityByTypeStr(engineTypeStr, pos, rot, dimensionId, isNpc)
-
-	@staticmethod
-	def CreateEngineItemEntity(itemDict, dimensionId, pos):
-		return self.CreateEngineItemEntity(itemDict, dimensionId, pos)
-
 	@staticmethod
 	def CreateExperienceOrb(entityId, exp, position, isSpecial):
 		comp = serverApi.GetEngineCompFactory().CreateExp(entityId)
@@ -221,12 +212,8 @@ class Entity:
 
 	@staticmethod
 	def CreateProjectileEntity(spawnerId, entityIdentifier, param):
-        comp = serverApi.GetEngineCompFactory().CreateProjectile(levelId)
+		comp = serverApi.GetEngineCompFactory().CreateProjectile(levelId)
 		return comp.CreateProjectileEntity(spawnerId, entityIdentifier, param)
-
-	@staticmethod
-	def DestroyEntity(entityId):
-        return self.DestroyEntity(entityId)
 
 	@staticmethod
 	def GetDroppedItem(itemEntityId, getUserData):
@@ -254,8 +241,8 @@ class Entity:
 
 	@staticmethod
 	def SpawnItemToLevel(itemDict, dimensionId, pos):
-        comp = serverApi.GetEngineCompFactory().CreateItem(levelId)
-        return comp.SpawnItemToLevel(itemDict, dimensionId, pos)
+		comp = serverApi.GetEngineCompFactory().CreateItem(levelId)
+		return comp.SpawnItemToLevel(itemDict, dimensionId, pos)
 
 	@staticmethod
 	def SpawnLootTable(pos, identifier, playerKillerId, damageCauseEntityId):
@@ -317,8 +304,8 @@ class Block:
 
 	@staticmethod
 	def SetJigsawBlock(pos, blockDict, dimensionId):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.SetJigsawBlock(pos, blockDict, dimensionId)
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.SetJigsawBlock(pos, blockDict, dimensionId)
 
 	@staticmethod
 	def SetLiquidBlock(pos, blockDict, dimensionId):
@@ -393,13 +380,13 @@ class BlockPalette:
 	@staticmethod
 	def GetBlockPaletteFromPosList(dimensionId, posList):
 		comp = serverApi.GetEngineCompFactory().CreateBlock(levelId)
-        return comp.GetBlockPaletteFromPosList(dimensionId, posList)
+		return comp.GetBlockPaletteFromPosList(dimensionId, posList)
 
 
 	@staticmethod
 	def RegisterBlockPatterns(pattern, defines, result_actor_name):
 		comp = serverApi.GetEngineCompFactory().CreateBlock(levelId)
-        return comp.RegisterBlockPatterns(pattern,defines,result_actor_name)
+		return comp.RegisterBlockPatterns(pattern,defines,result_actor_name)
 
 	@staticmethod
 	def SetBlockByBlockPalette(blockPalette, dimensionId, pos, rotation, conflictMode):
@@ -416,13 +403,13 @@ class Time:
 
 	@staticmethod
 	def GetLocalTime(dimension):
-        comp = serverApi.GetEngineCompFactory().CreateDimension(levelId)
-        return comp.GetLocalTime(dimension)
+		comp = serverApi.GetEngineCompFactory().CreateDimension(levelId)
+		return comp.GetLocalTime(dimension)
 
 	@staticmethod
 	def GetTime():
 		comp = serverApi.GetEngineCompFactory().CreateTime(levelId)
-		return omp.GetTime()
+		return comp.GetTime()
 
 	@staticmethod
 	def GetUseLocalTime(dimension):
@@ -551,7 +538,7 @@ class GameRule:
 		return comp.GetBannedItemList()
 
 	@staticmethod
-	def GetGameDiffculty():
+	def GetGameDiffculty(entityId):
 		comp = serverApi.GetEngineCompFactory().CreateGame(entityId)
 		return comp.GetGameDiffculty()
 
@@ -561,7 +548,7 @@ class GameRule:
 		return comp.GetGameRulesInfoServer()
 
 	@staticmethod
-	def GetGameType():
+	def GetGameType(entityId):
 		comp = serverApi.GetEngineCompFactory().CreateGame(entityId)
 		return comp.GetGameType()
 
@@ -603,7 +590,7 @@ class GameRule:
 	@staticmethod
 	def RemoveBlockProtectField(field):
 		gameComp = serverApi.GetEngineCompFactory().CreateGame(levelId)
-        return gameComp.RemoveBlockProtectField(field)
+		return gameComp.RemoveBlockProtectField(field)
 
 	@staticmethod
 	def SetCanActorSetOnFireByLightning(enable):
@@ -616,7 +603,7 @@ class GameRule:
 		return gameComp.SetCanBlockSetOnFireByLightning(enable)
 
 	@staticmethod
-	def SetDefaultGameType(gameType):
+	def SetDefaultGameType(gameType, playerId):
 		comp = serverApi.GetEngineCompFactory().CreateGame(playerId)
 		return comp.SetDefaultGameType(gameType)
 
@@ -626,12 +613,12 @@ class GameRule:
 		return comp.SetDisableCommandMinecart(isDisable)
 
 	@staticmethod
-	def SetDisableContainers(isDisable):
+	def SetDisableContainers(isDisable, entityId):
 		comp = serverApi.GetEngineCompFactory().CreateGame(entityId)
 		return comp.SetDisableContainers(isDisable)
 
 	@staticmethod
-	def SetDisableDropItem(isDisable):
+	def SetDisableDropItem(isDisable, entityId):
 		comp = serverApi.GetEngineCompFactory().CreateGame(entityId)
 		return comp.SetDisableDropItem(isDisable)
 
@@ -641,7 +628,7 @@ class GameRule:
 		return comp.SetDisableGravityInLiquid(isDisable)
 
 	@staticmethod
-	def SetDisableHunger(isDisable):
+	def SetDisableHunger(isDisable, entityId):
 		comp = serverApi.GetEngineCompFactory().CreateGame(entityId)
 		return comp.SetDisableHunger(isDisable)
 
@@ -652,8 +639,8 @@ class GameRule:
 
 	@staticmethod
 	def SetGameRulesInfoServer(gameRuleDict):
-        comp = serverApi.GetEngineCompFactory().CreateGame(levelId)
-        return comp.SetGameRulesInfoServer(gameRuleDict)
+		comp = serverApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.SetGameRulesInfoServer(gameRuleDict)
 
 	@staticmethod
 	def SetHurtCD(cdTime):
@@ -670,41 +657,41 @@ class ExtraData:
 
 	@staticmethod
 	def CleanExtraData(key, ID):
-        entitycomp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
-        return entitycomp.CleanExtraData(key)
+		entitycomp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
+		return entitycomp.CleanExtraData(key)
 
 	@staticmethod
 	def GetExtraData(key, ID):
-        comp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
-        return comp.GetExtraData(key)
+		comp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
+		return comp.GetExtraData(key)
 
 	@staticmethod
 	def GetWholeExtraData(ID):
-        comp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
-        return comp.GetWholeExtraData()
+		comp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
+		return comp.GetWholeExtraData()
 
 	@staticmethod
 	def SaveExtraData(ID):
-        entitycomp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
-        return entitycomp.SaveExtraData()
+		entitycomp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
+		return entitycomp.SaveExtraData()
 
 	@staticmethod
 	def SetExtraData(ID, key, value, autoSave):
-        levelcomp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
-        return levelcomp.SetExtraData(key,value,autoSave)
+		levelcomp = serverApi.GetEngineCompFactory().CreateExtraData(ID)
+		return levelcomp.SetExtraData(key,value,autoSave)
 
 
 class Command:
 
 	@staticmethod
 	def GetCommandPermissionLevel():
-        comp = serverApi.GetEngineCompFactory().CreateCommand(levelId)
-        return comp.GetCommandPermissionLevel()
+		comp = serverApi.GetEngineCompFactory().CreateCommand(levelId)
+		return comp.GetCommandPermissionLevel()
 
 	@staticmethod
 	def GetDefaultPlayerPermissionLevel():
-        comp = serverApi.GetEngineCompFactory().CreateCommand(levelId)
-        return comp.GetDefaultPlayerPermissionLevel()
+		comp = serverApi.GetEngineCompFactory().CreateCommand(levelId)
+		return comp.GetDefaultPlayerPermissionLevel()
 
 	@staticmethod
 	def SetCommand(cmdStr, playerId, showOutput):
@@ -713,13 +700,13 @@ class Command:
 
 	@staticmethod
 	def SetCommandPermissionLevel(opLevel):
-        comp = serverApi.GetEngineCompFactory().CreateCommand(levelId)
-        return comp.SetCommandPermissionLevel(opLevel)
+		comp = serverApi.GetEngineCompFactory().CreateCommand(levelId)
+		return comp.SetCommandPermissionLevel(opLevel)
 
 	@staticmethod
 	def SetDefaultPlayerPermissionLevel(opLevel):
-        comp = serverApi.GetEngineCompFactory().CreateCommand(levelId)
-        return comp.SetDefaultPlayerPermissionLevel(opLevel)
+		comp = serverApi.GetEngineCompFactory().CreateCommand(levelId)
+		return comp.SetDefaultPlayerPermissionLevel(opLevel)
 
 
 class Message:

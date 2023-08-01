@@ -27,67 +27,68 @@ class StatusAndAddedValue:
 
 class BlockEntity:
 
-    @staticmethod
-    def CleanBlockTileEntityCustomData(playerId, pos):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
-        return comp.CleanBlockTileEntityCustomData(pos)
+	@staticmethod
+	def CleanBlockTileEntityCustomData(playerId, pos):
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
+		return comp.CleanBlockTileEntityCustomData(pos)
 
-    @staticmethod
-    def GetBlockEntityData(dimension, pos):
-        blockEntitycomp = serverApi.GetEngineCompFactory().CreateBlockEntityData(levelId)
-        return blockEntitycomp.GetBlockEntityData(dimension, pos)
+	@staticmethod
+	def GetBlockEntityData(dimension, pos):
+		blockEntitycomp = serverApi.GetEngineCompFactory().CreateBlockEntityData(levelId)
+		return blockEntitycomp.GetBlockEntityData(dimension, pos)
 
-    @staticmethod
-    def GetBlockTileEntityCustomData(playerId, pos, key):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
-        return comp.GetBlockTileEntityCustomData(pos, key)
+	@staticmethod
+	def GetBlockTileEntityCustomData(playerId, pos, key):
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
+		return comp.GetBlockTileEntityCustomData(pos, key)
 
-    @staticmethod
-    def GetBlockTileEntityWholeCustomData(playerId, pos):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
-        return comp.GetBlockTileEntityWholeCustomData(pos)
+	@staticmethod
+	def GetBlockTileEntityWholeCustomData(playerId, pos):
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
+		return comp.GetBlockTileEntityWholeCustomData(pos)
 
-    @staticmethod
-    def SetBlockTileEntityCustomData(playerId, pos, key, value):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
-        return comp.SetBlockTileEntityCustomData(pos, key, value)
+	@staticmethod
+	def SetBlockTileEntityCustomData(playerId, pos, key, value):
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(playerId)
+		return comp.SetBlockTileEntityCustomData(pos, key, value)
 
 
 class BlockPalette:
 
 	@staticmethod
 	def DeleteBlockInBlockPalette(palette, blockName, auxValue):
-        return palette.DeleteBlockInBlockPalette(blockName, auxValue)
+		return palette.DeleteBlockInBlockPalette(blockName, auxValue)
 
 	@staticmethod
 	def DeserializeBlockPalette(dataDict):
-        newPalette = comp.GetBlankBlockPalette()
-        return newPalette.DeserializeBlockPalette(dataDict)
+		comp = serverApi.GetEngineCompFactory().CreateBlock(levelId)
+		newPalette = comp.GetBlankBlockPalette()
+		return newPalette.DeserializeBlockPalette(dataDict)
 
 	@staticmethod
 	def GetBlockCountInBlockPalette(palette, blockName, auxValue):
-        return palette.GetBlockCountInBlockPalette(blockName, auxValue)
+		return palette.GetBlockCountInBlockPalette(blockName, auxValue)
 
 	@staticmethod
 	def GetLocalPosListOfBlocks(palette, blockName, auxValue):
-        return palette.GetLocalPosListOfBlocks(blockName, auxValue)
+		return palette.GetLocalPosListOfBlocks(blockName, auxValue)
 
 	@staticmethod
 	def GetVolumeOfBlockPalette(palette):
-        return palette.GetVolumeOfBlockPalette()
+		return palette.GetVolumeOfBlockPalette()
 
 
 	@staticmethod
 	def ReplaceAirByStructureVoid(palette, enable):
-        return palette.ReplaceAirByStructureVoid(enable)
+		return palette.ReplaceAirByStructureVoid(enable)
 
 	@staticmethod
 	def ReplaceBlockInBlockPalette(palette, newblockName, newBlockAux, oldBlockName, oldBlockAux):
-        return palette.ReplaceBlockInBlockPalette(newblockName, newBlockAux, oldBlockName, oldBlockAux)
+		return palette.ReplaceBlockInBlockPalette(newblockName, newBlockAux, oldBlockName, oldBlockAux)
 
 	@staticmethod
 	def SerializeBlockPalette(sourcePalette):
-        return sourcePalette.SerializeBlockPalette()
+		return sourcePalette.SerializeBlockPalette()
 
 
 class Container:
@@ -185,26 +186,26 @@ class Noticeboard:
 
 	@staticmethod
 	def GetSignBlockText(pos):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.GetSignBlockText(pos)
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.GetSignBlockText(pos)
 
 	@staticmethod
 	def SetSignBlockText(pos, text):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.SetSignBlockText(pos, text)
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.SetSignBlockText(pos, text)
 
 
 class Bed:
 
 	@staticmethod
 	def GetBedColor(pos):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.GetBedColor(pos)
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.GetBedColor(pos)
 
 	@staticmethod
 	def SetBedColor(pos, color):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.SetBedColor(pos, color)
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.SetBedColor(pos, color)
 
 
 class Attribute:
@@ -221,5 +222,5 @@ class Attribute:
 
 	@staticmethod
 	def SetBlockBasicInfo(blockName, infoDict, auxValue):
-        comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-        return comp.SetBlockBasicInfo(blockName, infoDict, auxValue)
+		comp = serverApi.GetEngineCompFactory().CreateBlockInfo(levelId)
+		return comp.SetBlockBasicInfo(blockName, infoDict, auxValue)

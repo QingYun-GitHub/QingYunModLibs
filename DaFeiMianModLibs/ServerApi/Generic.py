@@ -129,7 +129,7 @@ class DeBug:
 
 	@staticmethod
 	def StopRecordEvent():
-		return erverApi.StartRecordEvent()
+		return serverApi.StartRecordEvent()
 
 	@staticmethod
 	def StopRecordPacket():

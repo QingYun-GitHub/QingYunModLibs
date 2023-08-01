@@ -11,8 +11,8 @@ class OnlineLobby:
 
 	@staticmethod
 	def LobbyGetStorage(callback, uid, keys):
-        comp = serverApi.GetEngineCompFactory().CreateHttp(levelId)
-        return comp.LobbyGetStorage(callback, uid, keys)
+		comp = serverApi.GetEngineCompFactory().CreateHttp(levelId)
+		return comp.LobbyGetStorage(callback, uid, keys)
 
 	@staticmethod
 	def LobbyGetStorageBySort(callback, key, ascend, offset, length):

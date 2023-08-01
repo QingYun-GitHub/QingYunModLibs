@@ -18,8 +18,3 @@ class Model:
 	def SetEntityScale(entityId, scale):
 		comp = serverApi.GetEngineCompFactory().CreateScale(entityId)
 		return comp.SetEntityScale(entityId, scale)
-
-	@staticmethod
-	def SetModel(entityId, modelName):
-		comp = clientApi.GetEngineCompFactory().CreateModel(entityId)
-		return comp.SetModelPerspectiveEffect(modelName)
