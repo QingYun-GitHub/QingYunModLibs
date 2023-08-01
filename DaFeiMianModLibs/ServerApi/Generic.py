@@ -1,143 +1,136 @@
 import mod.server.extraServerApi as serverApi
+levelId = serverApi.GetLevelId()
 
 class LocalDevice:
-        
-    @staticmethod
-    def Platform():
-        return serverApi.GetPlatform()
 
-    @staticmethod
-    def IsApollo():
-        return serverApi.IsInApollo()
+	@staticmethod
+	def GetPlatform():
+		return serverApi.GetPlatform()
 
-    @staticmethod
-    def IsServer():
-        return serverApi.IsInServer()
+	@staticmethod
+	def IsInApollo():
+		return serverApi.IsInApollo()
+
+	@staticmethod
+	def IsInServer():
+		return serverApi.IsInServer()
 
 
 class Math:
 
-    @staticmethod
-    def ToDir(Rot):
-        return serverApi.GetDirFromRot(Rot)
+	@staticmethod
+	def GetDirFromRot(rot):
+		return serverApi.GetDirFromRot(rot)
 
-    @staticmethod
-    def GetLocalPos(Pos, EntityId):
-        return serverApi.GetLocalPosFromWorld(Pos, EntityId)
+	@staticmethod
+	def GetLocalPosFromWorld(pos, entityId):
+		return serverApi.GetLocalPosFromWorld(pos, entityId)
 
-    @staticmethod
-    def ToRot(Dir):
-        return serverApi.GetRotFromDir(Dir)
+	@staticmethod
+	def GetRotFromDir(dir):
+		return serverApi.GetRotFromDir(dir)
 
-    @staticmethod
-    def GetWorldPos(Pos, EntityId):
-        return serverApi.GetWorldPosFromLocal(Pos, EntityId)
-
-
-class Tools:
-
-    @staticmethod
-    def AddReTimer(delay, func, date):
-        comp = serverApi.GetEngineCompFactory().CreateGame(serverApi.GetLevelId())
-        return comp.AddRepeatedTimer(delay, func, date) #
-
-    @staticmethod
-    def AddTimer(delay, func, date):
-        comp = serverApi.GetEngineCompFactory().CreateGame(serverApi.GetLevelId())
-        return comp.AddTimer(delay, func, date) #
-
-    @staticmethod
-    def CancelTimer(timer):
-        comp = serverApi.GetEngineCompFactory().CreateGame(serverApi.GetLevelId())
-        comp.CancelTimer(timer)
-
-    @staticmethod
-    def CheckName(name):
-        comp = serverApi.GetEngineCompFactory().CreateGame(serverApi.GetLevelId())
-        return comp.CheckNameValid(name)
-
-    @staticmethod
-    def CheckName(name):
-        comp = serverApi.GetEngineCompFactory().CreateGame(serverApi.GetLevelId())
-        return comp.CheckNameValid(name)
-
-    @staticmethod
-    def CheckWords(words):
-        comp = serverApi.GetEngineCompFactory().CreateGame(serverApi.GetLevelId())
-        return comp.CheckWordsValid(words)
-
-    @staticmethod
-    def GetChinese(langStr):
-        comp = serverApi.GetEngineCompFactory().CreateGame(serverApi.GetLevelId())
-        return comp.GetChinese(langStr)
-
-    @staticmethod
-    def GetEnum():
-        return serverApi.GetMinecraftEnum()
-
-    @staticmethod
-    def TickTime():
-        return serverApi.GetServerTickTime()
-
-    @staticmethod
-    def StartCoroutine(iterOrFunc, callback):
-        return serverApi.StartCoroutine(iterOrFunc, callback)
-
-    @staticmethod
-    def StopCoroutine(generator):
-        return serverApi.StopCoroutine(generator)
+	@staticmethod
+	def GetWorldPosFromLocal(pos, entityId):
+		return serverApi.GetWorldPosFromLocal(pos, entityId)
 
 
-class Debug:
+class Tool:
 
-    @staticmethod
-    def GetMcpModLogCanPostDump():
-        return serverApi.GetMcpModLogCanPostDump()
+	@staticmethod
+	def AddRepeatedTimer(delay, func, args):
+		comp = serverApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.AddRepeatedTimer(delay, func, args)
 
-    @staticmethod
-    def PostMcpModDump(msg):
-        return serverApi.PostMcpModDump(msg)
+	@staticmethod
+	def AddTimer(delay, func, args):
+		comp = serverApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.AddTimer(delay, func, args)
 
-    @staticmethod
-    def SetMcpModLogCanPostDump(keep):
-        return serverApi.SetMcpModLogCanPostDump(keep)
+	@staticmethod
+	def CancelTimer(timer):
+		comp = serverApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.CancelTimer(timer)
 
-    @staticmethod
-    def StartMemProfile():
-        return serverApi.StartMemProfile()
+	@staticmethod
+	def CheckNameValid(name):
+		comp = serverApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.CheckNameValid(name)
 
-    @staticmethod
-    def StartMultiProfile():
-        return serverApi.StopMultiProfile()
+	@staticmethod
+	def CheckWordsValid(words):
+		comp = serverApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.CheckWordsValid(words)
 
-    @staticmethod
-    def StartProfile():
-        return serverApi.StartProfile()
+	@staticmethod
+	def GetChinese(langStr):
+		comp = serverApi.GetEngineCompFactory().CreateGame(levelId)
+		return comp.GetChinese(langStr)
 
-    @staticmethod
-    def StartRecordEvent():
-        return serverApi.StartRecordEvent()
+	@staticmethod
+	def GetMinecraftEnum():
+		return serverApi.GetMinecraftEnum()
 
-    @staticmethod
-    def StartRecordPacket():
-        return serverApi.StartRecordPacket()
+	@staticmethod
+	def StartCoroutine(iterOrFunc, callback):
+		return serverApi.StartCoroutine(iterOrFunc, callback)
 
-    @staticmethod
-    def StopMemProfile(fileName):
-        return serverApi.StopMemProfile(fileName="flamegraph.svg")
+	@staticmethod
+	def StopCoroutine(iter):
+		return serverApi.StopCoroutine(iter)
 
-    @staticmethod
-    def StopMultiProfile(fileName):
-        return serverApi.StopMultiProfile(fileName="flamegraph.svg")
 
-    @staticmethod
-    def StopProfile(fileName):
-        return serverApi.StopProfile(fileName="flamegraph.svg")
+class DeBug:
 
-    @staticmethod
-    def StopRecordEvent():
-        return serverApi.StopRecordEvent()
+	@staticmethod
+	def GetMcpModLogCanPostDump():
+		return serverApi.GetMcpModLogCanPostDump()
 
-    @staticmethod
-    def StopRecordPacket():
-        return serverApi.StopRecordPacket()
+
+	@staticmethod
+	def PostMcpModDump(msg, *args, **kwargs):
+		return serverApi.PostMcpModDump(msg, *args, **kwargs)
+
+	@staticmethod
+	def SetMcpModLogCanPostDump(canPost):
+		return serverApi.SetMcpModLogCanPostDump(canPost)
+
+	@staticmethod
+	def StartMemProfile():
+		return serverApi.StartMemProfile()
+
+	@staticmethod
+	def StartMultiProfile():
+		return serverApi.StartMultiProfile()
+
+	@staticmethod
+	def StartProfile():
+		return serverApi.StartProfile()
+
+	@staticmethod
+	def StartRecordEvent():
+		return serverApi.StartRecordEvent()
+
+	@staticmethod
+	def StartRecordPacket():
+		return serverApi.StartRecordPacket()
+
+	@staticmethod
+	def StopMemProfile(fileName):
+		return serverApi.StopMemProfile(fileName)
+
+	@staticmethod
+	def StopMultiProfile(fileName):
+		return serverApi.StopMultiProfile(fileName)
+
+	@staticmethod
+	def StopProfile(fileName):
+		return serverApi.StopProfile(fileName)
+
+	@staticmethod
+	def StopRecordEvent():
+		return erverApi.StartRecordEvent()
+
+	@staticmethod
+	def StopRecordPacket():
+		return serverApi.StartRecordPacket()
