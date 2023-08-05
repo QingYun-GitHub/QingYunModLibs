@@ -142,6 +142,8 @@ def GetEntityByCoordEvent(event):
         Scroll_ViewBlockPath = Scroll_View[View_Key]["BlockPath"]
         uiName = Scroll_View[View_Key]["uiName"]
         Pos_X, Pos_Y = UIScreen.GetCompMustPosition(uiName, Scroll_ViewScreenPath)
+        if not Scroll_View[View_Key]["TouchSize"]:
+            return 
         Size_X, Size_Y = Scroll_View[View_Key]["TouchSize"]
         PosX, PosY = UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).GetPosition()
         Touch_Motion_X = PosX - X
