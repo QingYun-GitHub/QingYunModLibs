@@ -16,11 +16,6 @@ class BlockEntity:
 		return comp.CreateParticleEffectForBlockEntity(pos, path, particleKeyName, effectPos)
 
 	@staticmethod
-	def GetBlockEntityData(dimension, pos):
-		blockEntitycomp = clientApi.GetEngineCompFactory().CreateBlockEntityData(levelId)
-		return blockEntitycomp.GetBlockEntityData(dimension, pos)
-
-	@staticmethod
 	def GetBlockEntityData(pos, variableName):
 		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
 		return comp.GetBlockEntityMolangValue(pos, variableName)

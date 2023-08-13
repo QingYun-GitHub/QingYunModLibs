@@ -150,15 +150,10 @@ def GetClientResult(DataId, BackFunc):
         BackFunc(Result)
 
 
-def CallAllClient(FuncName, EventData):
+def CallAllClient(FuncName, EventData, BackFunc=None):
     PlayerIdList = serverApi.GetPlayerList()
-    ResultList = []
-
     for playerId in PlayerIdList:
-        Result = CallClient(FuncName, playerId, EventData)
-        ResultList.append(Result)
-
-    return ResultList
+        CallClient(FuncName, playerId, EventData, BackFunc)
 
 
 def CallServer(FuncName, EventData, BackFunc=None):
