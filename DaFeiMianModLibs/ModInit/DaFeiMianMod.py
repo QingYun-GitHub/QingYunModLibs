@@ -2,11 +2,12 @@
 from mod.common.mod import Mod
 import mod.server.extraServerApi as serverApi
 import mod.client.extraClientApi as clientApi
-import importlib
 levelId = serverApi.GetLevelId()
 ModObject = None
 Server = []
 Client = []
+PluginsServer = []
+PluginsClient = []
 
 
 class DaFeiMianMod(object):
@@ -52,27 +53,30 @@ class DaFeiMianMod(object):
 class ModInit(object):
     @Mod.InitServer()
     def Server(self):
+        global PluginsServer
         for server in Server:
             print "Finished importing " + server
-            module = serverApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr(server)
-            if module:
-                del module
-                return
-            Module = importlib.import_module(ModObject.ModName + '.' + server)
-            serverApi.GetEngineCompFactory().CreateModAttr(levelId).SetAttr(server, Module)
+            __import__(ModObject.ModName + "." + server)
+            Plugins = __import__(ModObject.ModName + "." + "DaFeiMianModLibs" + "." + "Plugins").DaFeiMianModLibs.Plugins
+            for Module in Plugins.GetAllPlugins.func_globals:
+                if "Plugins" in Module and Module != "GetAllPlugins":
+                    PluginsName = Module[:7]
+                    __import__(ModObject.ModName + "." + "DaFeiMianModLibs.Plugins." + Module + "." + PluginsName + "Server")
+                    PluginsServer.append(PluginsName + "Server")
 
     @Mod.InitClient()
     def Client(self):
-        global UIMod
+        global PluginsClient
         for client in Client:
             print "Finished importing " + client
-            module = clientApi.GetEngineCompFactory().CreateModAttr(levelId).GetAttr(client)
-            if module:
-                del module
-                return
-            Module = importlib.import_module(ModObject.ModName + '.' + client)
-            UIMod = importlib.import_module(ModObject.ModName + '.DaFeiMianModLibs.' + "UIMod")
-            clientApi.GetEngineCompFactory().CreateModAttr(levelId).SetAttr(client, Module)
+            __import__(ModObject.ModName + "." + client)
+            Plugins = __import__(ModObject.ModName + "." + "DaFeiMianModLibs" + "." + "Plugins").DaFeiMianModLibs.Plugins
+            for Module in  Plugins.GetAllPlugins.func_globals:
+                if "Plugins" in Module and Module != "GetAllPlugins":
+                    PluginsName = Module[:7]
+                    __import__(ModObject.ModName + "." + "DaFeiMianModLibs.Plugins." + Module + "." + PluginsName + "Client")
+                    PluginsClient.append(PluginsName + "Client")
+                    print "These Plugins Was Finished Running\n                 ===========================\n                 ServerPlugins:", PluginsServer, "\n                 ClientPlugins:", PluginsClient, "\n                 ==========================="
 
 
 def CreateGameTick(BindTickName):
