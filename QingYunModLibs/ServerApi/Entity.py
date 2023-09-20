@@ -270,8 +270,8 @@ class Action:
 
 
 	@staticmethod
-	def Hurt(damage, cause, attackerId, childAttackerId, knocked):
-		comp = serverApi.GetEngineCompFactory().CreateHurt(attackerId)
+	def Hurt(EntityId, damage, cause, attackerId, childAttackerId=None, knocked=True):
+		comp = serverApi.GetEngineCompFactory().CreateHurt(EntityId)
 		return comp.Hurt(damage, cause, attackerId, childAttackerId, knocked)
 
 	@staticmethod

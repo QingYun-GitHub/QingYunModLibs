@@ -12,13 +12,14 @@ ClientSys = clientApi.GetClientSystemCls()
 ClientEventList = []
 ServerEventList = []
 ServerComp = serverApi.GetEngineCompFactory()
-ClientComp = serverApi.GetEngineCompFactory()
+ClientComp = clientApi.GetEngineCompFactory()
 ServerEventDataName = QingYunMod.ModObject.ModName+"ServerEventData"
 ClientEventDataName = QingYunMod.ModObject.ModName+"ClientEventData"
 if ServerComp.CreateModAttr(levelId):
     ServerComp.CreateModAttr(levelId).SetAttr(ServerEventDataName, [])
 if ClientComp.CreateModAttr(levelId):
     ClientComp.CreateModAttr(levelId).SetAttr(ClientEventDataName, [])
+BackFuncDict = {}
 
 
 def GetClientModAttr(entityId, AttrName):
@@ -61,19 +62,21 @@ class ServerSystem(ServerSys):
     def ListenBackForCall(self, args):
         result = self.Func(args['args'])
         DataId = args['DataId']
-        DataList = ServerComp.CreateModAttr(levelId).GetAttr(ServerEventDataName)
-        NewDataList = []
-        if not DataList:
-            return
-        for Data in DataList:
-            if Data["DataId"] == DataId:
-                Data["Data"] = result
-            NewDataList.append(Data)
-        ServerComp.CreateModAttr(levelId).SetAttr(ServerEventDataName, NewDataList)
-        SyncServerToClientData()
+        TargetId = args['playerId']
+        args = {
+            "DataId": DataId,
+            "Result": result
+        }
+        self.NotifyToClient(TargetId, "GetServerResult", args)
 
     def ListenCall(self):
         self.ListenForEvent(QingYunMod.ModObject.ModName, "Client", self.Func.__name__, self, self.ListenBackForCall)
+
+    def GetResult(self, args):
+        self.Func(args)
+
+    def ListenResult(self):
+        self.ListenForEvent(QingYunMod.ModObject.ModName, "Client", self.Func.__name__, self, self.GetResult)
 
     def ListenNotify(self, EventName):
         self.ListenForEvent(QingYunMod.ModObject.ModName, "Client", EventName, self, self.ListenBack)
@@ -96,16 +99,17 @@ class ClientSystem(ClientSys):
     def ListenBackForCall(self, args):
         result = self.Func(args['args'])
         DataId = args['DataId']
-        DataList = GetClientModAttr(levelId, ClientEventDataName)
-        NewDataList = []
-        if not DataList:
-            return
-        for Data in DataList:
-            if Data["DataId"] == DataId:
-                Data["Data"] = result
-            NewDataList.append(Data)
-        SetClientModAttr(levelId, ClientEventDataName, NewDataList)
-        SyncClientToServerData()
+        args = {
+            "DataId": DataId,
+            "Result": result
+        }
+        self.NotifyToServer("GetClientResult", args)
+
+    def GetResult(self, args):
+        self.Func(args)
+
+    def ListenResult(self):
+        self.ListenForEvent(QingYunMod.ModObject.ModName, "Server", self.Func.__name__, self, self.GetResult)
 
     def ListenCall(self):
         self.ListenForEvent(QingYunMod.ModObject.ModName, "Server", self.Func.__name__, self, self.ListenBackForCall)
@@ -149,25 +153,20 @@ def CallBack(Func, TargetId="-1", IsReturn=True):
             SyncClientToServerData()
 
 
-def CallClient(FuncName, TargetId, EventData, BackFunc=None):
+def CallClient(FuncName, TargetId, EventData, BackFunc=None, ModName=QingYunMod.ModObject.ModName):
     args = {
         'args': EventData,
         'DataId': FuncName+":"+TargetId
     }
     DataId = FuncName+":"+TargetId
-    ServerSystem(QingYunMod.ModObject.ModName, "Server", None).NotifyToClient(TargetId, FuncName, args)
-    ClientComp.CreateGame(levelId).AddTimer(0.1, GetClientResult, DataId, BackFunc)
+    ServerSystem(ModName, "Server", None).NotifyToClient(TargetId, FuncName, args)
+    BackFuncDict[DataId] = BackFunc
 
 
-def GetClientResult(DataId, BackFunc):
-    DataObjList = ServerComp.CreateModAttr(levelId).GetAttr(ServerEventDataName)
-    Result = None
-    if DataObjList == None:
-        SyncClientToServerData()
-        return
-    for DataObj in DataObjList:
-        if DataObj["DataId"] == DataId:
-            Result = DataObj["Data"]
+def GetClientResult(args):
+    DataId = args["DataId"]
+    Result = args["Result"]
+    BackFunc = BackFuncDict.get(DataId, None)
     if BackFunc:
         BackFunc(Result)
 
@@ -178,27 +177,37 @@ def CallAllClient(FuncName, EventData, BackFunc=None):
         CallClient(FuncName, playerId, EventData, BackFunc)
 
 
-def CallServer(FuncName, EventData, BackFunc=None):
+def CallServer(FuncName, EventData, BackFunc=None, ModName=QingYunMod.ModObject.ModName):
     args = {
         'args': EventData,
-        'DataId': FuncName + ":" + "-1"
+        'DataId': FuncName + ":" + "-1",
+        'playerId': clientApi.GetLocalPlayerId()
     }
     DataId = FuncName + ":" + "-1"
-    ClientSystem(QingYunMod.ModObject.ModName, "Client", None).NotifyToServer(FuncName, args)
-    ClientComp.CreateGame(levelId).AddTimer(0.1, GetServerResult, DataId, BackFunc)
+    ClientSystem(ModName, "Client", None).NotifyToServer(FuncName, args)
+    BackFuncDict[DataId] = BackFunc
 
 
-def GetServerResult(DataId, BackFunc):
-    DataObjList = GetClientModAttr(levelId, ClientEventDataName)
-    Result = None
-    if DataObjList == None:
-        SyncServerToClientData()
-        return
-    for DataObj in DataObjList:
-        if DataObj["DataId"] == DataId:
-            Result = DataObj["Data"]
+def GetServerResult(args):
+    DataId = args["DataId"]
+    Result = args["Result"]
+    BackFunc = BackFuncDict.get(DataId, None)
     if BackFunc:
         BackFunc(Result)
+
+
+def MappingCall(FuncName, EventData):
+    args = {
+        "FuncName": FuncName,
+        "EventData": EventData
+    }
+    CallServer("__Mapping", args)
+
+
+def __Mapping(args):
+    FuncName = args['FuncName']
+    EventData = args['EventData']
+    CallAllClient(FuncName, EventData)
 
 
 def ListenServerEvents(EventName, Func):
@@ -331,3 +340,31 @@ def GetPlugins(PluginsName):
         return QingYunMod.implib.import_module(QingYunMod.ModObject.ModName + ".QingYunModLibs.Plugins." + PluginsName)
     else:
         print Bcolors.ERROR+PluginsName + " not in package"
+
+
+def __RegisterModule_Client(event):
+    for Module in QingYunMod.ClientModuleList:
+        print Module.__name__, "Client"
+        PlayerId = clientApi.GetLocalPlayerId()
+        ClientModules = ClientComp.CreateModAttr(PlayerId).GetAttr("ClientModules")
+        if ClientModules == None:
+            ClientModules = {}
+        ClientModules[Module.__name__] = Module
+        ClientComp.CreateModAttr(PlayerId).SetAttr("ClientModules", ClientModules)
+
+
+def __RegisterModule_Server(event):
+    for Module in QingYunMod.ServerModuleList:
+        print Module.__name__, "Server"
+        ServerModules = ServerComp.CreateModAttr(levelId).GetAttr("ServerModules")
+        if ServerModules == None:
+            ServerModules = {}
+        ServerModules[Module.__name__] = Module
+        ServerComp.CreateModAttr(levelId).SetAttr("ServerModules", ServerModules)
+
+
+CallBack(__Mapping)
+ListenClientEvents(ClientEvents.WorldEvents.LoadClientAddonScriptsAfter, __RegisterModule_Client)
+ListenServerEvents(ServerEvents.WorldEvents.LoadServerAddonScriptsAfter, __RegisterModule_Server)
+ServerSystem(QingYunMod.ModObject.ModName, "Server", GetClientResult).ListenResult()
+ClientSystem(QingYunMod.ModObject.ModName, "Client", GetServerResult).ListenResult()

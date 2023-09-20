@@ -142,7 +142,7 @@ class Render:
 		return comp.AddPlayerRenderMaterial(materialKey, materialName)
 
 	@staticmethod
-	def AddPlayerScriptAnimate(playerId, animateName, condition, autoReplace):
+	def AddPlayerScriptAnimate(playerId, animateName, condition="", autoReplace=False):
 		comp = clientApi.GetEngineCompFactory().CreateActorRender(playerId)
 		return comp.AddPlayerScriptAnimate(animateName, condition, autoReplace)
 

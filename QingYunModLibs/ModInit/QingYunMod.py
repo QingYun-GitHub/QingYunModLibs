@@ -7,6 +7,8 @@ levelId = serverApi.GetLevelId()
 ModObject = None
 Server = []
 Client = []
+ClientModuleList = []
+ServerModuleList = []
 PluginsServer = []
 PluginsClient = []
 
@@ -54,21 +56,24 @@ class QingYunMod(object):
 class ModInit(object):
     @Mod.InitServer()
     def Server(self):
-        global PluginsServer
+        global ServerModuleList
         for server in Server:
             print "Finished importing " + server
             print
-            implib.import_module(ModObject.ModName + "." + server)
+            ServerModule = implib.import_module(ModObject.ModName + "." + server)
+            ServerModuleList.append(ServerModule)
             LoadingPlugins("Server")
             implib.import_module(ModObject.ModName + ".QingYunModLibs.Config").ServerUser = True
             implib.import_module(ModObject.ModName + ".QingYunModLibs.Config").ServerUserPlayerId = clientApi.GetLocalPlayerId()
 
     @Mod.InitClient()
     def Client(self):
+        global ClientModuleList
         for client in Client:
             print "Finished importing " + client
             print
-            implib.import_module(ModObject.ModName + "." + client)
+            ClientModule = implib.import_module(ModObject.ModName + "." + client)
+            ClientModuleList.append(ClientModule)
             LoadingPlugins("Client")
             print "These Plugins Was Finished Running\n                 ===========================\n                 ServerPlugins:", PluginsServer, "\n                 ClientPlugins:", PluginsClient, "\n                 ==========================="
 

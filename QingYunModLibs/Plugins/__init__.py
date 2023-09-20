@@ -1,6 +1,7 @@
 import QingYunPlugins
 import RolePlugins
-import TickPlugins
+import MathPlugins
+import DamagePlugins
 
 
 def GetAllPlugins():
