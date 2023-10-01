@@ -2,7 +2,6 @@
 from mod.common.mod import Mod
 import mod.server.extraServerApi as serverApi
 import mod.client.extraClientApi as clientApi
-implib = "".__class__.__mro__[-1].__subclasses__()[60].__init__.__globals__['__builtins__']['__import__']('importlib')
 levelId = serverApi.GetLevelId()
 ModObject = None
 Server = []
@@ -11,6 +10,16 @@ ClientModuleList = []
 ServerModuleList = []
 PluginsServer = []
 PluginsClient = []
+
+
+def CreateGameTick(BindTickName):
+    try:
+        clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).SetAttr("TickName", BindTickName)
+    except:
+        print "UnClient"
+
+
+implib = CreateGameTick.__globals__['__builtins__']['__import__']('importlib')
 
 
 class QingYunMod(object):
@@ -56,26 +65,34 @@ class QingYunMod(object):
 class ModInit(object):
     @Mod.InitServer()
     def Server(self):
-        global ServerModuleList
-        for server in Server:
-            print "Finished importing " + server
-            print
-            ServerModule = implib.import_module(ModObject.ModName + "." + server)
-            ServerModuleList.append(ServerModule)
-            LoadingPlugins("Server")
-            implib.import_module(ModObject.ModName + ".QingYunModLibs.Config").ServerUser = True
-            implib.import_module(ModObject.ModName + ".QingYunModLibs.Config").ServerUserPlayerId = clientApi.GetLocalPlayerId()
+        _SS(ModObject.ModName, "Server", InitServer).ListenEvent("LoadServerAddonScriptsAfter")
 
     @Mod.InitClient()
     def Client(self):
-        global ClientModuleList
-        for client in Client:
-            print "Finished importing " + client
-            print
-            ClientModule = implib.import_module(ModObject.ModName + "." + client)
-            ClientModuleList.append(ClientModule)
-            LoadingPlugins("Client")
-            print "These Plugins Was Finished Running\n                 ===========================\n                 ServerPlugins:", PluginsServer, "\n                 ClientPlugins:", PluginsClient, "\n                 ==========================="
+        _CS(ModObject.ModName, "Client", InitClient).ListenEvent("LoadClientAddonScriptsAfter")
+
+
+def InitServer(self):
+    global ServerModuleList
+    for server in Server:
+        print "Finished importing " + server
+        print
+        ServerModule = implib.import_module(ModObject.ModName + "." + server)
+        ServerModuleList.append(ServerModule)
+        LoadingPlugins("Server")
+        implib.import_module(ModObject.ModName + ".QingYunModLibs.Config").ServerUser = True
+        implib.import_module(ModObject.ModName + ".QingYunModLibs.Config").ServerUserPlayerId = clientApi.GetLocalPlayerId()
+
+
+def InitClient(self):
+    global ClientModuleList
+    for client in Client:
+        print "Finished importing " + client
+        print
+        ClientModule = implib.import_module(ModObject.ModName + "." + client)
+        ClientModuleList.append(ClientModule)
+        LoadingPlugins("Client")
+        print "These Plugins Was Finished Running\n                 ===========================\n                 ServerPlugins:", PluginsServer, "\n                 ClientPlugins:", PluginsClient, "\n                 ==========================="
 
 
 def LoadingPlugins(System):
@@ -91,8 +108,25 @@ def LoadingPlugins(System):
                 PluginsServer.append(PluginsName + System)
 
 
-def CreateGameTick(BindTickName):
-    try:
-        clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).SetAttr("TickName", BindTickName)
-    except:
-        print "UnClient"
+class _CS(clientApi.GetClientSystemCls()):
+    def __init__(self, ns, sys, Func):
+        super(_CS, self).__init__(ns, sys)
+        self.Func = Func
+
+    def ListenEvent(self, EventName):
+        self.ListenForEvent(clientApi.GetEngineNamespace(), clientApi.GetEngineSystemName(), EventName, self, self.ListenBack)
+
+    def ListenBack(self, *args):
+        self.Func(*args)
+
+
+class _SS(serverApi.GetServerSystemCls()):
+    def __init__(self, ns, sys, Func):
+        super(_SS, self).__init__(ns, sys)
+        self.Func = Func
+
+    def ListenEvent(self, EventName):
+        self.ListenForEvent(serverApi.GetEngineNamespace(), serverApi.GetEngineSystemName(), EventName, self, self.ListenBack)
+
+    def ListenBack(self, *args):
+        self.Func(*args)

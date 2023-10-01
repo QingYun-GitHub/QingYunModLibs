@@ -132,26 +132,6 @@ def CallBack(Func, TargetId="-1", IsReturn=True):
     else:
         ClientSystem(QingYunMod.ModObject.ModName, "Client", Func).ListenCall()
 
-    if IsReturn:
-        if TargetId == "-1":
-            DataObj = {
-                "DataId": Func.__name__+":"+TargetId,
-                "Data": "NoData"
-            }
-            if not ServerComp.CreateModAttr(levelId).GetAttr(ServerEventDataName):
-                ServerComp.CreateModAttr(levelId).SetAttr(ServerEventDataName, [])
-            ServerComp.CreateModAttr(levelId).GetAttr(ServerEventDataName).append(DataObj)
-            SyncServerToClientData()
-        else:
-            DataObj = {
-                "DataId": Func.__name__ + ":" + TargetId,
-                "Data": "NoData"
-            }
-            if not GetClientModAttr(levelId, ClientEventDataName):
-                SetClientModAttr(levelId, ClientEventDataName, [])
-            GetClientModAttr(levelId, ClientEventDataName).append(DataObj)
-            SyncClientToServerData()
-
 
 def CallClient(FuncName, TargetId, EventData, BackFunc=None, ModName=QingYunMod.ModObject.ModName):
     args = {
@@ -328,9 +308,16 @@ def CreateEntityServer(EntityTypeStr, Pos, Rot=(0, 0), DimId=0, IsNpc=False):
     return ServerSystem(QingYunMod.ModObject.ModName, "Server", None).CreateEngineEntityByTypeStr(EntityTypeStr, Pos, Rot, DimId, IsNpc)
 
 
-def GetModule(ModuleName):
-    if ModuleName in QingYunMod.implib.import_module(QingYunMod.ModObject.ModName).__dict__:
-        return QingYunMod.implib.import_module(QingYunMod.ModObject.ModName + "." + ModuleName)
+def GetClientModule(ModuleName):
+    if ModuleName in ClientComp.CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr("ClientModules"):
+        return ClientComp.CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr("ClientModules")[ModuleName]
+    else:
+        print Bcolors.ERROR+ModuleName + " not in package"
+
+
+def GetServerModule(ModuleName):
+    if ModuleName in ServerComp.CreateModAttr(levelId).GetAttr("ServerModules"):
+        return ServerComp.CreateModAttr(levelId).GetAttr("ServerModules")[ModuleName]
     else:
         print Bcolors.ERROR+ModuleName + " not in package"
 
@@ -351,6 +338,7 @@ def __RegisterModule_Client(event):
             ClientModules = {}
         ClientModules[Module.__name__] = Module
         ClientComp.CreateModAttr(PlayerId).SetAttr("ClientModules", ClientModules)
+        CallServer("__RegisterModule_Server", event)
 
 
 def __RegisterModule_Server(event):
@@ -364,7 +352,7 @@ def __RegisterModule_Server(event):
 
 
 CallBack(__Mapping)
-ListenClientEvents(ClientEvents.WorldEvents.LoadClientAddonScriptsAfter, __RegisterModule_Client)
-ListenServerEvents(ServerEvents.WorldEvents.LoadServerAddonScriptsAfter, __RegisterModule_Server)
+ListenClientEvents(ClientEvents.WorldEvents.OnLocalPlayerStopLoading, __RegisterModule_Client)
+CallBack(__RegisterModule_Server)
 ServerSystem(QingYunMod.ModObject.ModName, "Server", GetClientResult).ListenResult()
 ClientSystem(QingYunMod.ModObject.ModName, "Client", GetServerResult).ListenResult()

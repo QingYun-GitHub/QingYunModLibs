@@ -305,3 +305,64 @@ TapOrHoldReleaseClientEvent = "TapOrHoldReleaseClientEvent"
 移动端及pc的F11模式下点触流程见下图
 https://mc.163.com/dev/mcmanual/mc-dev/assets/img/pe_touch_event.4e2b39b0.png
 '''
+
+
+OnGamepadKeyPressClientEvent = "OnGamepadKeyPressClientEvent"
+'''
+描述
+
+游戏手柄按键事件
+
+参数
+
+screenName	str	当前screenName
+key	int	键码，详见GamepadKeyType枚举
+isDown	str	是否按下，按下为1，弹起为0
+
+返回值
+
+无
+'''
+
+
+OnGamepadStickClientEvent = "OnGamepadStickClientEvent"
+'''
+描述
+
+游戏手柄摇杆事件
+
+参数
+
+key	int	键码，详见GamepadKeyType枚举
+x	float	摇杆水平方向的值，从左到右取值为 -1.0 ~ 1.0
+y	float	摇杆竖直方向的值，从下到上取值为 -1.0 ~ 1.0
+
+返回值
+
+无
+
+备注
+
+触发时机：当摇杆摇动位置发生改变时
+'''
+
+
+OnGamepadTriggerClientEvent = "OnGamepadTriggerClientEvent"
+'''
+描述
+
+游戏手柄扳机事件
+
+参数
+
+key	int	键码，详见GamepadKeyType枚举
+magnitude	float	扣动扳机的力度，取值为 0 ~ 1.0
+
+返回值
+
+无
+
+备注
+
+触发时机：当扣动扳机的力度发生改变时
+'''

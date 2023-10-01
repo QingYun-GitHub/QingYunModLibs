@@ -1,4 +1,6 @@
 from ...ServerMod import *
+RoleDataList = []
+RoleAnimationDataList = []
 
 
 def Attack(args):
@@ -14,7 +16,18 @@ CallBack(Attack)
 
 
 def LoadingRenderData(RoleData):
+    playerId = RoleData["playerId"]
+    RoleDataList.append(RoleData)
     CallAllClient("LoadingRenderData", RoleData)
+    for RoleData in RoleDataList:
+        CallClient("LoadingRenderData", playerId, RoleData)
+
+
+def UpDataAnimation(args):
+    if args:
+        RoleAnimationDataList.append(args)
+    for AnimationData in RoleAnimationDataList:
+        CallAllClient("__InitPlayerAnimation", AnimationData)
 
 
 def CreateHurt(args):
@@ -25,4 +38,5 @@ def CreateHurt(args):
 
 
 CallBack(LoadingRenderData)
+CallBack(UpDataAnimation)
 CallBack(CreateHurt)

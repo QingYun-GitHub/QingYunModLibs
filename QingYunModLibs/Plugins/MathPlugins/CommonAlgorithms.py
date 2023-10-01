@@ -68,3 +68,63 @@ def GetAttackId(args):
             if date_ <= angle / 2:
                 PurpleList.append(i)
     return PurpleList
+
+
+def GetClosestEntity_Server(playerId, radius):
+    '''
+    获取玩家周围指定范围内最近的生物(用于服务端)
+
+    :param playerId: 玩家id
+    :param radius: 范围大小
+    :return: ClosestEntityId
+    '''
+    from ....QingYunModLibs import ServerApi
+    filters = {}
+    EntityList = ServerApi.World.Map.GetEntitiesAround(playerId, radius, filters)
+    EntityList.remove(playerId)
+    DistanceDict = {}
+    for entityId in EntityList:
+        EntityType = ServerApi.Entity.EngineType.GetEngineType(entityId)
+        if EntityType == 64 or EntityType == 69:
+            return
+        EPx, EPy, EPz = ServerApi.Entity.Attribute.GetPos(entityId)
+        PPx, PPy, PPz = ServerApi.Entity.Attribute.GetPos(playerId)
+        Mx = pow(EPx-PPx, 2)
+        My = pow(EPy-PPy, 2)
+        Mz = pow(EPz-PPz, 2)
+        Distance = math.sqrt(Mx+My+Mz)
+        DistanceDict[Distance] = entityId
+    if not DistanceDict:
+        return
+    ClosestEntityId = DistanceDict[min(DistanceDict)]
+    return ClosestEntityId
+
+
+def GetClosestEntity_Client(playerId, radius):
+    '''
+    获取玩家周围指定范围内最近的生物(用于客户端)
+
+    :param playerId: 玩家id
+    :param radius: 范围大小
+    :return: ClosestEntityId
+    '''
+    from ....QingYunModLibs import ClientApi
+    filters = {}
+    EntityList = ClientApi.World.Map.GetEntitiesAround(playerId, radius, filters)
+    EntityList.remove(playerId)
+    DistanceDict = {}
+    for entityId in EntityList:
+        EntityType = ClientApi.Entity.EngineType.GetEngineType(entityId)
+        if EntityType == 64 or EntityType == 69:
+            return
+        EPx, EPy, EPz = ClientApi.Entity.Attribute.GetPos(entityId)
+        PPx, PPy, PPz = ClientApi.Entity.Attribute.GetPos(playerId)
+        Mx = pow(EPx-PPx, 2)
+        My = pow(EPy-PPy, 2)
+        Mz = pow(EPz-PPz, 2)
+        Distance = math.sqrt(Mx+My+Mz)
+        DistanceDict[Distance] = entityId
+    if not DistanceDict:
+        return
+    ClosestEntityId = DistanceDict[min(DistanceDict)]
+    return ClosestEntityId
