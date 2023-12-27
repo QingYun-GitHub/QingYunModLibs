@@ -5,35 +5,41 @@ __GamePadFuncDict = {}
 
 def __OnKeyPress(args):
     KeyValue = args['key']
-    if KeyValue in __KeyBoardFuncDict:
-        if __KeyBoardFuncDict[KeyValue] and args['isDown'] == "1":
-            KeyBoardData = __KeyBoardFuncDict[KeyValue]
-            Func = KeyBoardData["Func"]
-            Param = KeyBoardData.get("Param", KeyValue)
-            Func(Param)
+    for KeyValue in [KeyValue+"1", KeyValue+"0"]:
+        if KeyValue in __KeyBoardFuncDict:
+            if __KeyBoardFuncDict[KeyValue]:
+                KeyBoardData = __KeyBoardFuncDict[KeyValue]
+                if KeyBoardData["State"] == args["isDown"]:
+                    Func = KeyBoardData["Func"]
+                    Param = KeyBoardData.get("Param", KeyValue)
+                    Func(Param)
 
 
 def __OnGamePadPress(args):
     KeyValue = args['key']
-    if KeyValue in __GamePadFuncDict:
-        if __GamePadFuncDict[KeyValue] and args['isDown'] == "1":
-            KeyBoardData = __GamePadFuncDict[KeyValue]
-            Func = KeyBoardData["Func"]
-            Param = KeyBoardData.get("Param", KeyValue)
-            Func(Param)
+    for KeyValue in [KeyValue + "1", KeyValue + "0"]:
+        if KeyValue in __GamePadFuncDict:
+            if __GamePadFuncDict[KeyValue] and args['isDown'] == "1":
+                KeyBoardData = __GamePadFuncDict[KeyValue]
+                if KeyBoardData["State"] == args["isDown"]:
+                    Func = KeyBoardData["Func"]
+                    Param = KeyBoardData.get("Param", KeyValue)
+                    Func(Param)
 
 
-def AddKeyFuncBind(KeyValue, Func, Param=None):
-    __KeyBoardFuncDict[str(KeyValue)] = {
+def AddKeyFuncBind(KeyValue, Func, Param=None, State="1"):
+    __KeyBoardFuncDict[str(KeyValue)+State] = {
         "Func": Func,
-        "Param": Param
+        "Param": Param,
+        "State": State
     }
 
 
-def AddGamePadFuncBind(KeyValue, Func, Param=None):
-    __GamePadFuncDict[str(KeyValue)] = {
+def AddGamePadFuncBind(KeyValue, Func, Param=None, State="1"):
+    __GamePadFuncDict[str(KeyValue)+State] = {
         "Func": Func,
-        "Param": Param
+        "Param": Param,
+        "State": State
     }
 
 

@@ -118,19 +118,19 @@ class ClientSystem(ClientSys):
         self.ListenForEvent(QingYunMod.ModObject.ModName, "Server", EventName, self, self.ListenBack)
 
 
-def CallBack(Func, TargetId="-1", IsReturn=True):
+def CallBack(Func, TargetId="-1", ModName=QingYunMod.ModObject.ModName):
     '''
         通信绑定函数，用于绑定目标函数，发信端发信时该接口绑定的函数会被调用，可返回某值
 
         :param Func: 自定义通信的回调函数
         :param TargetId: 自定义通信的目标id，客户端一般为playerId，服务端则为-1，服务端无需传参
-        :param IsReturn: 是否传回发信端返回值，默认为是
+        :param ModName: 是否传回发信端返回值，默认为是
         :return:
     '''
     if TargetId == "-1":
-        ServerSystem(QingYunMod.ModObject.ModName, "Server", Func).ListenCall()
+        ServerSystem(ModName, "Server", Func).ListenCall()
     else:
-        ClientSystem(QingYunMod.ModObject.ModName, "Client", Func).ListenCall()
+        ClientSystem(ModName, "Client", Func).ListenCall()
 
 
 def CallClient(FuncName, TargetId, EventData, BackFunc=None, ModName=QingYunMod.ModObject.ModName):
@@ -151,19 +151,23 @@ def GetClientResult(args):
         BackFunc(Result)
 
 
-def CallAllClient(FuncName, EventData, BackFunc=None):
-    PlayerIdList = serverApi.GetPlayerList()
-    for playerId in PlayerIdList:
-        CallClient(FuncName, playerId, EventData, BackFunc)
+def CallAllClient(FuncName, EventData, BackFunc=None, ModName=QingYunMod.ModObject.ModName):
+    args = {
+        'args': EventData,
+        'DataId': FuncName
+    }
+    DataId = FuncName
+    ServerSystem(ModName, "Server", None).BroadcastToAllClient(FuncName, args)
+    BackFuncDict[DataId] = BackFunc
 
 
 def CallServer(FuncName, EventData, BackFunc=None, ModName=QingYunMod.ModObject.ModName):
     args = {
         'args': EventData,
-        'DataId': FuncName + ":" + "-1",
+        'DataId': FuncName,
         'playerId': clientApi.GetLocalPlayerId()
     }
-    DataId = FuncName + ":" + "-1"
+    DataId = FuncName
     ClientSystem(ModName, "Client", None).NotifyToServer(FuncName, args)
     BackFuncDict[DataId] = BackFunc
 
@@ -322,13 +326,6 @@ def GetServerModule(ModuleName):
         print Bcolors.ERROR+ModuleName + " not in package"
 
 
-def GetPlugins(PluginsName):
-    if PluginsName in QingYunMod.implib.import_module(QingYunMod.ModObject.ModName+".QingYunModLibs.Plugins").__dict__:
-        return QingYunMod.implib.import_module(QingYunMod.ModObject.ModName + ".QingYunModLibs.Plugins." + PluginsName)
-    else:
-        print Bcolors.ERROR+PluginsName + " not in package"
-
-
 def __RegisterModule_Client(event):
     for Module in QingYunMod.ClientModuleList:
         print Module.__name__, "Client"
@@ -351,8 +348,18 @@ def __RegisterModule_Server(event):
         ServerComp.CreateModAttr(levelId).SetAttr("ServerModules", ServerModules)
 
 
+def DestroyServerEvents(args):
+    ServerSystem(QingYunMod.ModObject.ModName, "Server", None).UnListenAllEvents()
+
+
+def DestroyClientEvents(args):
+    ClientSystem(QingYunMod.ModObject.ModName, "Client", None).UnListenAllEvents()
+
+
 CallBack(__Mapping)
 ListenClientEvents(ClientEvents.WorldEvents.OnLocalPlayerStopLoading, __RegisterModule_Client)
 CallBack(__RegisterModule_Server)
 ServerSystem(QingYunMod.ModObject.ModName, "Server", GetClientResult).ListenResult()
 ClientSystem(QingYunMod.ModObject.ModName, "Client", GetServerResult).ListenResult()
+ListenServerEvents(ServerEvents.WorldEvents.PlayerIntendLeaveServerEvent, DestroyServerEvents)
+ListenServerEvents(ClientEvents.WorldEvents.UnLoadClientAddonScriptsBefore, DestroyClientEvents)

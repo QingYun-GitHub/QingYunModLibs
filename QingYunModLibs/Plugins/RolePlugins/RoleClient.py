@@ -2,6 +2,8 @@
 import random
 
 from ...ClientMod import *
+from ..MathPlugins import CommonAlgorithms
+from ..DamagePlugins import DamageClient
 playerId = ClientApi.Player.playerId
 levelId = ClientApi.World.levelId
 RoleObjDict = {}
@@ -14,23 +16,31 @@ ShowWarning = True
 # 初始化部分
 # ======================================================================================================================
 class InitRole(object):
-    def __init__(self, RoleData, RoleAttackData):
+    def __init__(self, RoleData, RoleAttackData = None, RoleSpecialAttackDataList = None, RoleSuperAttackData = None):
         global RoleObjDict
         ClientApi.Entity.ExtraAttribute.SetAttr(levelId, "Persp", 1)
         ClientApi.Entity.Molang.Register("query.mod.first_person", 0.0)
         self.RoleName = RoleData['RoleName']
+        self.RoleTrulyName = RoleData.get("RoleTrulyName", self.RoleName)
+        self.RoleIcon = RoleData.get("RoleIcon", "textures/ui/Screen")
         self.RoleType = RoleData['RoleType']
         self.RoleModel = RoleData['RoleModel']
         self.RoleTexture = RoleData['RoleTexture']
         self.RoleMaterial = RoleData['RoleMaterial']
         self.RoleController = RoleData['RoleController']
         self.RoleAnimation = RoleData['RoleAnimation']
+        self.InheritAnimation = RoleData.get('InheritAnimation', True)
+        self.RoleHealth = RoleData.get("RoleHealth", 20)
         self.TurnFunc = RoleData.get('TurnFunc', None)
         self.EndFunc = RoleData.get('EndFunc', None)
         self.ShowMenu = RoleData.get('ShowMenu', False)
         self.FirstPersonPos = RoleData.get('FirstPersonPos', (0, 0.2, -4.1))
         self.RoleAttackData = RoleAttackData
         self.InitName()
+        self.InitTrulyName()
+        self.InitIcon()
+        self.InitInheritAnimation()
+        self.InitHealth()
         self.InitType()
         self.InitTurnFunc()
         self.InitEndFunc()
@@ -42,17 +52,52 @@ class InitRole(object):
         self.InitController()
         self.InitAnimation()
         if RoleAttackData:
-            self.AttackObj = Attack(self.RoleName, len(RoleAttackData), RoleAttackData)
+            self.AttackObj = Attack(self.RoleName, len(RoleAttackData), RoleAttackData, RoleSpecialAttackDataList, RoleSuperAttackData)
             if not ClientApi.Entity.ExtraAttribute.GetAttr(playerId, "AttackObj"):
                 ClientApi.Entity.ExtraAttribute.SetAttr(playerId, "AttackObj", {})
             AttackObjDict = ClientApi.Entity.ExtraAttribute.GetAttr(playerId, "AttackObj")
             AttackObjDict[self.RoleName] = self.AttackObj
-
         RoleObjDict[self.RoleName] = self
 
     def InitName(self):
         RoleName = self.RoleName
         self.RegisterData("Name", RoleName)
+
+    def InitTrulyName(self):
+        RoleTrulyName = self.RoleTrulyName
+        RoleDataDict = ClientApi.Entity.ExtraAttribute.GetAttr(levelId, "RoleTrulyName")
+        if not RoleDataDict:
+            ClientApi.Entity.ExtraAttribute.SetAttr(levelId, "RoleTrulyName", {})
+        RoleDataDict = ClientApi.Entity.ExtraAttribute.GetAttr(levelId, "RoleTrulyName")
+        RoleDataDict[self.RoleName] = RoleTrulyName
+        ClientApi.Entity.ExtraAttribute.SetAttr(levelId, "RoleTrulyName", RoleDataDict)
+
+    def InitIcon(self):
+        RoleIcon = self.RoleIcon
+        RoleDataDict = ClientApi.Entity.ExtraAttribute.GetAttr(levelId, "RoleIcon")
+        if not RoleDataDict:
+            ClientApi.Entity.ExtraAttribute.SetAttr(levelId, "RoleIcon", {})
+        RoleDataDict = ClientApi.Entity.ExtraAttribute.GetAttr(levelId, "RoleIcon")
+        RoleDataDict[self.RoleName] = RoleIcon
+        ClientApi.Entity.ExtraAttribute.SetAttr(levelId, "RoleIcon", RoleDataDict)
+
+    def InitInheritAnimation(self):
+        InheritAnimation = self.InheritAnimation
+        RoleDataDict = ClientApi.Entity.ExtraAttribute.GetAttr(levelId, "InheritAnimation")
+        if not RoleDataDict:
+            ClientApi.Entity.ExtraAttribute.SetAttr(levelId, "InheritAnimation", {})
+        RoleDataDict = ClientApi.Entity.ExtraAttribute.GetAttr(levelId, "InheritAnimation")
+        RoleDataDict[self.RoleName] = InheritAnimation
+        ClientApi.Entity.ExtraAttribute.SetAttr(levelId, "InheritAnimation", RoleDataDict)
+
+    def InitHealth(self):
+        RoleHealth = self.RoleHealth
+        RoleDataDict = ClientApi.Entity.ExtraAttribute.GetAttr(levelId, "RoleHealth")
+        if not RoleDataDict:
+            ClientApi.Entity.ExtraAttribute.SetAttr(levelId, "RoleHealth", {})
+        RoleDataDict = ClientApi.Entity.ExtraAttribute.GetAttr(levelId, "RoleHealth")
+        RoleDataDict[self.RoleName] = RoleHealth
+        ClientApi.Entity.ExtraAttribute.SetAttr(levelId, "RoleHealth", RoleDataDict)
 
     def InitType(self):
         RoleType = self.RoleType
@@ -205,6 +250,7 @@ CallBack(LoadingRenderData, playerId)
 
 
 def TurnRole(RoleName):
+    CallServer("SetKnock", [playerId, True])
     if not ClientComp.CreatePlayerView(levelId).GetPerspective():
         ClientApi.Entity.ExtraAttribute.SetAttr(levelId, "Persp", 0)
         ClientComp.CreatePlayerView(levelId).SetPerspective(1)
@@ -221,6 +267,7 @@ def TurnRole(RoleName):
     if TurnFunc:
         TurnFunc(args)
     MappingCall("__TurnToRole", args)
+    MappingCall("TurnToRoleUI", args)
 
 
 def __TurnToRole(args):
@@ -233,6 +280,7 @@ def __TurnToRole(args):
     if RoleTypeData[RoleName] == "Role":
         ClientApi.Entity.Molang.Set(PlayerId, "query.mod." + Role, 0.0)
         ClientApi.Player.Render.RemovePlayerGeometry(PlayerId, "default")
+        __RebuildPlayerRender(PlayerId)
         if PlayerId == playerId:
             RunningRole = RoleName
     if RoleTypeData[RoleName] == "Weapon":
@@ -240,13 +288,13 @@ def __TurnToRole(args):
         if PlayerId == playerId:
             RunningWeapon = RoleName
     ClientApi.Entity.Molang.Set(PlayerId, "query.mod." + RoleName, 1.0)
-    ClientApi.Player.Render.RebuildPlayerRender(PlayerId)
 
 
 CallBack(__TurnToRole, playerId)
 
 
 def ReplyPlayer():
+    CallServer("SetKnock", [playerId, False])
     clientApi.HideFoldGUI(False)
     Persp = ClientApi.Entity.ExtraAttribute.GetAttr(levelId, "Persp")
     ClientComp.CreatePlayerView(levelId).SetPerspective(Persp)
@@ -261,7 +309,6 @@ def ReplyPlayer():
 def __ReplyPlayer(args):
     global RunningRole
     PlayerId = args[0]
-    Role = args[1]
     for Role in ClientApi.Entity.ExtraAttribute.GetAttr(levelId, "RoleName"):
         ClientApi.Entity.Molang.Set(PlayerId, "query.mod." + Role, 0.0)
     if PlayerId == playerId:
@@ -278,7 +325,6 @@ def __ReplyWeapon(args):
     if PlayerId == playerId:
         RunningWeapon = "default"
     ClientApi.Player.Render.AddPlayerGeometry(PlayerId, "default", "geometry.humanoid.custom")
-    ClientApi.Player.Render.RebuildPlayerRender(PlayerId)
 
 
 CallBack(__ReplyPlayer, playerId)
@@ -314,6 +360,12 @@ def __SetMolang(args):
     Query = args[1]
     Value = args[2]
     ClientApi.Entity.Molang.Set(PlayerId, Query, Value)
+
+
+def __Register(args):
+    Query = args[0]
+    Value = args[1]
+    ClientApi.Entity.Molang.Register(Query, Value)
 
 
 def __SetPlayerAnimationController(args):
@@ -366,7 +418,7 @@ def FovShaking(Power):
         OffsetDict = ClientApi.Entity.ExtraAttribute.GetAttr(levelId, "FirstPersonPos")
         if RunningWeapon != "default":
             Offset = OffsetDict[RunningWeapon]
-        else:
+        elif RunningRole != "default":
             Offset = OffsetDict[RunningRole]
     Ox, Oy, Oz = Offset
     ClientComp.CreateGame(levelId).AddTimer(0.02, ClientApi.Player.Camera.SetCameraOffset, (
@@ -395,12 +447,13 @@ CallBack(__RebuildPlayerRender, playerId)
 CallBack(__SetMolang, playerId)
 CallBack(__SetPlayerAnimationController, playerId)
 CallBack(__PlaySound, playerId)
+CallBack(__Register, playerId)
 CallBack(PlayEffect, playerId)
 
 
 # ======================================================================================================================
 class Attack(object):
-    def __init__(self, RoleName, AttackTick, AttackData):
+    def __init__(self, RoleName, AttackTick, AttackData, SpecialAttackDataList, SuperAttackData):
         self.RoleName = RoleName
         self.AttackState = 1
         self.AttackTick = AttackTick
@@ -410,6 +463,10 @@ class Attack(object):
         self.AttackStateDict = {}
         self.OldQuery = ""
         self.AfterTimer = None
+        self.SpecialAttackDataList = SpecialAttackDataList
+        self.SuperAttackData = SuperAttackData
+        ClientApi.Entity.Molang.Register("query.mod.is_attack", 0.0)
+        ClientApi.Entity.Molang.Register("query.mod.is_attack_common", 0.0)
         ListenClientEvents(ClientEvents.WorldEvents.OnLocalPlayerStopLoading, self.__InitAnimation__)
 
     def __InitAnimation__(self, args):
@@ -431,11 +488,11 @@ class Attack(object):
         if self.CanNotAttack:
             return
         self.CanNotAttack = True
-        if self.AttackState == self.AttackTick:
-            MappingCall("__RebuildPlayerRender", playerId)
-        CommonMath = GetPlugins("MathPlugins").CommonAlgorithms
-        ClosestEntityId = CommonMath.GetClosestEntity_Client(PlayerId, 8)
-        if ClosestEntityId:
+        CommonMath = CommonAlgorithms
+        AttackData = self.AttackData[self.AttackState]
+        radius = AttackData.get("radius", 8)
+        ClosestEntityId = CommonMath.GetClosestEntity_Client(PlayerId, radius)
+        if ClosestEntityId and ClientApi.Entity.ExtraAttribute.GetAttr(playerId, "GetTarget"):
             TargetPos = ClientApi.Entity.Attribute.GetPos(ClosestEntityId)
             if not ClientApi.Entity.Molang.Get(playerId, "query.mod.first_person"):
                 ClientApi.Entity.Attribute.SetPlayerLookAtPos(TargetPos, 60, 60, True)
@@ -443,12 +500,12 @@ class Attack(object):
         ClientApi.Generic.Tool.CancelTimer(self.AfterTimer)
         self.AfterAnimation()
         ClientApi.Control.Control.SetCanMove(False)
+        ClientApi.Control.Control.SetMoveLock(True)
         print self.AttackState
-        AttackData = self.AttackData[self.AttackState]
+        ClientApi.Entity.ExtraAttribute.SetAttr(playerId, "AttackState", AttackData)
         AttackSpace = AttackData['AttackSpace']
         ReBackTime = AttackData['ReBackTime']
         ClientApi.Generic.Tool.AddTimer(AttackSpace, self.TimingCool)
-        MappingCall("__PlaySound", AttackData.get('SoundData', None))
         AttackDamage = AttackData['Damage']
         AnimationTime = AttackData['AnimationTime']
         AttackMovingPower = AttackData['MovingPower']
@@ -456,13 +513,20 @@ class Attack(object):
         AttackData["AttackState"] = self.AttackState
         AttackFunc = AttackData.get("AttackFunc", None)
         NewAttackData = AttackData.copy()
+        AttackTime = AttackData.get("AttackTime", 0)
         if AttackFunc:
-            AttackFunc(NewAttackData)
+            ClientComp.CreateGame(levelId).AddTimer(AttackTime, MappingCall, "__PlaySound", AttackData.get('SoundData', None))
+            ClientApi.Generic.Tool.AddTimer(AttackTime, AttackFunc, NewAttackData)
         for AttackEffectData in AttackData['EffectData']:
+            AfterTime = AttackEffectData.get("AfterTime", 0)
             AttackEffectData["PlayerId"] = PlayerId
-            MappingCall("PlayEffect", AttackEffectData)
+            ClientComp.CreateGame(levelId).AddTimer(AfterTime, MappingCall, "PlayEffect", AttackEffectData)
         self.SetPlayerMoving(AttackMovingPower)
         args = [PlayerId, self.OldQuery, 0.0]
+        MappingCall("__SetMolang", args)
+        args = [playerId, "query.mod.is_attack", 1.0]
+        MappingCall("__SetMolang", args)
+        args = [playerId, "query.mod.is_attack_common", 1.0]
         MappingCall("__SetMolang", args)
         AttackQuery = self.AttackStateDict[str(self.AttackState)]
         args = [PlayerId, False]
@@ -474,7 +538,7 @@ class Attack(object):
         Power = AttackData.get("ShakingPower", 0)
         args = [PurpleList, AttackDamage, PlayerId, AttackDamageType, Power]
         if AttackDamage:
-            CallServer("Attack", args, self.AttackEntity)
+            ClientComp.CreateGame(levelId).AddTimer(AttackTime, CallServer, "Attack", args, self.AttackEntity)
         if self.AttackState == self.AttackTick:
             self.AttackState = 0
         self.AttackState += 1
@@ -505,6 +569,7 @@ class Attack(object):
     def ReBackAnimate(self):
         self.AttackState = 1
         ClientApi.Control.Control.SetCanMove(True)
+        ClientApi.Control.Control.SetMoveLock(False)
 
     def AfterAnimation(self):
         self.OldQuery = ""
@@ -512,14 +577,24 @@ class Attack(object):
             Query = self.AttackStateDict[QueryId]
             args = [playerId, Query, 0.0]
             MappingCall("__SetMolang", args)
+            args = [playerId, "query.mod.is_attack", 0.0]
+            MappingCall("__SetMolang", args)
+            args = [playerId, "query.mod.is_attack_common", 0.0]
+            MappingCall("__SetMolang", args)
         args = [playerId, True]
         MappingCall("__SetPlayerAnimationController", args)
+        if not ClientApi.Entity.ExtraAttribute.GetAttr(levelId, "InheritAnimation").get(
+            GetClientModule("ModScripts.Client").RoleClient.RunningRole, True):
+            args = [playerId, False]
+            MappingCall("__SetPlayerAnimationController", args)
+
+
 # ======================================================================================================================
 
 
 def CreateDamageText(args):
     AttackDamage, entityId, Type = args
-    GetPlugins("DamagePlugins").DamageClient.CreateDamageTextBoard(AttackDamage, entityId, Type)
+    DamageClient.CreateDamageTextBoard(AttackDamage, entityId, Type)
 
 
 CallBack(CreateDamageText, playerId)
@@ -546,4 +621,4 @@ def OnLoaded(args):
 
 
 ListenClientEvents(ClientEvents.PlayerEvents.PerspChangeClientEvent, OnPerspChanged)
-ListenClientEvents(ClientEvents.WorldEvents.OnLocalPlayerStopLoading, OnLoaded)
+ListenClientEvents(ClientEvents.UIEvents.UiInitFinished, OnLoaded)

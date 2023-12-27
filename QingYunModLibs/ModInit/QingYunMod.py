@@ -19,9 +19,6 @@ def CreateGameTick(BindTickName):
         print "UnClient"
 
 
-implib = CreateGameTick.__globals__['__builtins__']['__import__']('importlib')
-
-
 class QingYunMod(object):
     '''
     通过实例化此类来注册Mod
@@ -77,11 +74,12 @@ def InitServer(self):
     for server in Server:
         print "Finished importing " + server
         print
-        ServerModule = implib.import_module(ModObject.ModName + "." + server)
+        ServerModule = serverApi.ImportModule(ModObject.ModName+"."+server)
         ServerModuleList.append(ServerModule)
         LoadingPlugins("Server")
-        implib.import_module(ModObject.ModName + ".QingYunModLibs.Config").ServerUser = True
-        implib.import_module(ModObject.ModName + ".QingYunModLibs.Config").ServerUserPlayerId = clientApi.GetLocalPlayerId()
+        from ...QingYunModLibs import Config
+        Config.ServerUser = True
+        Config.ServerUserPlayerId = clientApi.GetLocalPlayerId()
 
 
 def InitClient(self):
@@ -89,7 +87,7 @@ def InitClient(self):
     for client in Client:
         print "Finished importing " + client
         print
-        ClientModule = implib.import_module(ModObject.ModName + "." + client)
+        ClientModule = clientApi.ImportModule(ModObject.ModName+"."+client)
         ClientModuleList.append(ClientModule)
         LoadingPlugins("Client")
         print "These Plugins Was Finished Running\n                 ===========================\n                 ServerPlugins:", PluginsServer, "\n                 ClientPlugins:", PluginsClient, "\n                 ==========================="
@@ -97,11 +95,10 @@ def InitClient(self):
 
 def LoadingPlugins(System):
     global PluginsClient, PluginsServer
-    Plugins = implib.import_module(ModObject.ModName + "." + "QingYunModLibs" + "." + "Plugins")
+    from .. import Plugins
     for Module in Plugins.GetAllPlugins.func_globals:
         if "Plugins" in Module and Module != "GetAllPlugins":
             PluginsName = Module[:-7]
-            implib.import_module(ModObject.ModName + "." + "QingYunModLibs.Plugins." + Module + "." + PluginsName + System)
             if System == "Client":
                 PluginsClient.append(PluginsName + System)
             else:

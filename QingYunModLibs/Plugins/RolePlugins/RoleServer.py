@@ -1,6 +1,7 @@
 from ...ServerMod import *
 RoleDataList = []
 RoleAnimationDataList = []
+UnKnockPlayerIdList = []
 
 
 def Attack(args):
@@ -37,6 +38,22 @@ def CreateHurt(args):
     ServerApi.Entity.Action.Hurt(EntityId, Damage, serverApi.GetMinecraftEnum().ActorDamageCause.EntityAttack, PlayerId)
 
 
+def SetKnock(args):
+    PlayerId = args[0]
+    State = args[1]
+    if State:
+        UnKnockPlayerIdList.append(PlayerId)
+    elif not State:
+        UnKnockPlayerIdList.remove(PlayerId)
+
+
+def OnDamage(args):
+    if args['entityId'] in UnKnockPlayerIdList:
+        args['knock'] = False
+
+
 CallBack(LoadingRenderData)
 CallBack(UpDataAnimation)
 CallBack(CreateHurt)
+CallBack(SetKnock)
+ListenServerEvents(ServerEvents.EntityEvents.DamageEvent, OnDamage)

@@ -5,31 +5,23 @@ import SystemApi
 import UIScreen
 UINameList = []
 PluginsUINameList = []
-Touch = False
 Touch_Motion_X = 0
 Touch_Motion_Y = 0
+ControlMotion = {}
 MovingSpeed = ()
 OldPos = None
 TimeCold = True
+Touch = False
 
 
 def UiInitFinished(event):
-    from ModInit.QingYunMod import implib
     for uiName in UINameList:
-        try:
-            implib.import_module(SystemApi.QingYunMod.ModObject.ModName + '.' + uiName)
-        except:
-            print (SystemApi.Bcolors.ERROR+"UI路径获取异常，是否为正确路径？>>>"+SystemApi.QingYunMod.ModObject.ModName + '.' + uiName)
         clientApi.RegisterUI(SystemApi.QingYunMod.ModObject.ModName, uiName, SystemApi.QingYunMod.ModObject.ModName + '.' + uiName + '.' + "UIScreen", uiName + '.main')
         clientApi.CreateUI(SystemApi.QingYunMod.ModObject.ModName, uiName, {"isHud": 1})
 
     for UI in PluginsUINameList:
         uiName = UI[0]
         PluginsName = UI[1]
-        try:
-            implib.import_module(SystemApi.QingYunMod.ModObject.ModName + '.QingYunModLibs.Plugins.' + PluginsName + "." + uiName)
-        except:
-            print (SystemApi.Bcolors.ERROR+"UI路径获取异常，是否为正确路径？>>>" + SystemApi.QingYunMod.ModObject.ModName + '.' + uiName)
         clientApi.RegisterUI(SystemApi.QingYunMod.ModObject.ModName, uiName, SystemApi.QingYunMod.ModObject.ModName + '.QingYunModLibs.Plugins.' + PluginsName + "." + uiName + '.' + "UIScreen", uiName + '.main')
         clientApi.CreateUI(SystemApi.QingYunMod.ModObject.ModName, uiName, {"isHud": 1})
 
@@ -180,11 +172,50 @@ def GetEntityByCoordEvent(event):
 
 
 def GetEntityByCoordReleaseClientEvent(event):
-    global Touch
-    Touch = False
+    for ControlData in ControlMotion:
+        Control = ControlMotion[ControlData]
+        Control["Touch"] = False
+
+
+def GetEntityByCoordEventForTouchMoving(args):
+    if not clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).GetAttr("TouchMoving"):
+        return
+    TouchMoving = clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).GetAttr("TouchMovingControl")
+    if TouchMoving == None:
+        return
+    for TouchValue in TouchMoving:
+        X, Y = clientApi.GetTouchPos()
+        Scroll_ViewBlockPath = TouchValue["ControlPath"]
+        uiName = TouchValue["uiName"]
+        ModName = TouchValue["ModName"]
+        PosX, PosY = UIScreen.GetCompMustPosition(uiName, Scroll_ViewBlockPath, ModName)
+        Size_X, Size_Y = clientApi.GetUI(ModName, uiName).GetBaseUIControl(Scroll_ViewBlockPath).GetSize()
+        if PosX < X < Size_X + PosX and PosY < Y < Size_Y + PosY:
+            ControlMotion[Scroll_ViewBlockPath] = {"Motion": (-Size_X/2, -Size_Y/2), "Touch": True}
+            return
+
+
+def TouchMovingForControl():
+    if not clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).GetAttr("TouchMoving"):
+        return
+    TouchMoving = clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).GetAttr("TouchMovingControl")
+    for TouchValue in TouchMoving:
+        X, Y = clientApi.GetTouchPos()
+        Scroll_ViewBlockPath = TouchValue["ControlPath"]
+        uiName = TouchValue["uiName"]
+        if Scroll_ViewBlockPath not in ControlMotion:
+            continue
+        Touch = ControlMotion[Scroll_ViewBlockPath]["Touch"]
+        if not Touch:
+            continue
+        Mx, My = ControlMotion[Scroll_ViewBlockPath]["Motion"]
+        Pos = (X + Mx, Y + My)
+        UIScreen.SetCompMustPosition(uiName, Scroll_ViewBlockPath, Pos)
 
 
 SystemApi.ListenClientEvents("UiInitFinished", UiInitFinished)
 SystemApi.ListenClientEvents("OnScriptTickClient", OnScriptTick)
 SystemApi.ListenClientEvents("GetEntityByCoordEvent", GetEntityByCoordEvent)
 SystemApi.ListenClientEvents("GetEntityByCoordReleaseClientEvent", GetEntityByCoordReleaseClientEvent)
+SystemApi.ListenClientEvents("GetEntityByCoordEvent", GetEntityByCoordEventForTouchMoving)
+SystemApi.ListenClientEvents("OnScriptTickClient", TouchMovingForControl)

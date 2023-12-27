@@ -12,11 +12,20 @@ GirdBlockPathList = []
 ViewBinder = clientApi.GetViewBinderCls()
 GameTickFunc = []
 TickName = clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).GetAttr("TickName")
+PressLongTimeDict = {}
+PressLongBackFuncDict = {}
+PressingCompTimerDict = {}
 
 
 class UIScreen(ScreenNode):
     def __init__(self, ns, nm, par):
         ScreenNode.__init__(self, ns, nm, par)
+        ListenClientEvents("OnScriptTickClient", self.GetToggle)
+        ListenClientEvents("DimensionChangeFinishClientEvent", self.ClearButtonBackList)
+
+    def ClearButtonBackList(self, args):
+        global ButtonBackList
+        ButtonBackList = []
 
     def Create(self):
         for ButtonPath in ButtonPathList:
@@ -48,7 +57,6 @@ class UIScreen(ScreenNode):
     def GameTick(self):
         for TickFunc in GameTickFunc:
             TickFunc()
-            self.GetToggle()
 
     def GetToggle(self):
         try:
@@ -65,9 +73,7 @@ class UIScreen(ScreenNode):
                 if not StateData:
                     clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).SetAttr(
                         self.GetScreenName(), {})
-                if StateData.get("Toggle", None) != State:
-                    clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr(
-                        "ToggleBack")[ToggleControl](State)
+                clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr("ToggleBack")[ToggleControl](State)
                 StateData["Toggle"] = State
                 clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).SetAttr(
                     self.GetScreenName(),
@@ -135,10 +141,21 @@ def SetVisiable(uiName, CompPath, Visiable=True):
     设置某控件是否显示在UI上，True为显示，False为不显示
 
     :param uiName: 需要进行操作的UI名称
-    :param ButtonPath: 控件路径
+    :param CompPath: 控件路径
     :param Visiable: 是否显示（True为显示，False为不显示）
     '''
     UIModComp(uiName).GetBaseUIControl(CompPath).SetVisible(Visiable)
+
+
+def GetVisiable(uiName, CompPath):
+    '''
+    获取某控件是否显示在UI上，返回值为显示状态，True为显示，False为不显示
+
+    :param uiName: 需要进行操作的UI名称
+    :param CompPath: 控件路径
+    :return: 显示状态（True为显示，False为不显示）
+    '''
+    return UIModComp(uiName).GetBaseUIControl(CompPath).GetVisible()
 
 
 def GetIsHud(uiName):
@@ -214,7 +231,7 @@ def GetCompPosition(uiName, CompPath):
     return SizeDict
 
 
-def GetCompMustPosition(uiName, CompPath):
+def GetCompMustPosition(uiName, CompPath, ModName=QingYunMod.ModObject.ModName):
     '''
     获取某一控件的绝对全局屏幕坐标
 
@@ -230,11 +247,33 @@ def GetCompMustPosition(uiName, CompPath):
             if Comp == "":
                 continue
             NewComp = NewComp + "/" + Comp
-        X, Y = UIModComp(uiName).GetBaseUIControl(NewComp).GetPosition()
+        X, Y = clientApi.GetUI(ModName, uiName).GetBaseUIControl(NewComp).GetPosition()
         Pos_X = Pos_X + X
         Pos_Y = Pos_Y + Y
         ParentPath.pop(-1)
     return Pos_X, Pos_Y
+
+
+def SetCompMustPosition(uiName, CompPath, Pos):
+    '''
+    设置某一控件的绝对全局屏幕坐标
+
+    :param uiName: 需要进行操作的UI名称
+    :param CompPath: 需要获取坐标的控件路径
+    '''
+    Pos_X, Pos_Y = Pos
+    ParentPath = str(CompPath).split("/")
+    for Num in range(1, len(str(CompPath).split("/"))):
+        ParentPath.pop(-1)
+        NewComp = ""
+        for Comp in ParentPath:
+            if Comp == "":
+                continue
+            NewComp = NewComp + "/" + Comp
+        X, Y = UIModComp(uiName).GetBaseUIControl(NewComp).GetPosition()
+        Pos_X = Pos_X - X
+        Pos_Y = Pos_Y - Y
+    UIModComp(uiName).GetBaseUIControl(CompPath).SetPosition((Pos_X, Pos_Y))
 
 
 def RemoveComponent(uiName, CompPath):#删除组件
@@ -371,3 +410,55 @@ def AddToggleBack(ToggleControl, BackFunc):
         ToggleBackDict = {}
     ToggleBackDict[ToggleControl] = BackFunc
     clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).SetAttr("ToggleBack", ToggleBackDict)
+
+
+def __StartCompTimer(args):
+    ButtonPath = args['ButtonPath']
+    PressTime = PressLongTimeDict[ButtonPath]
+    BackFunc = PressLongBackFuncDict[ButtonPath]
+    args["IsPress"] = None
+    BackFunc(args)
+    args["IsPress"] = True
+    Timer = ClientComp.CreateGame(levelId).AddTimer(PressTime, BackFunc, args)
+    PressingCompTimerDict[ButtonPath] = Timer
+
+
+def __StopCompTimer(args):
+    ButtonPath = args['ButtonPath']
+    Timer = PressingCompTimerDict[ButtonPath]
+    ClientComp.CreateGame(levelId).CancelTimer(Timer)
+    PressingCompTimerDict.pop(ButtonPath)
+    args["IsPress"] = False
+    BackFunc = PressLongBackFuncDict[ButtonPath]
+    BackFunc(args)
+
+
+def AddLongPressBack(uiName, ButtonPath, PressTime, BackFunc):
+    ClientComp.CreateGame(levelId).AddTimer(0, __AddLongPressBack, uiName, ButtonPath, PressTime, BackFunc)
+
+
+def AddButtonTouchMoving(uiName, ControlPath):
+    TouchMoving = clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).GetAttr("TouchMovingControl")
+    if not TouchMoving:
+        clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).SetAttr("TouchMovingControl", [])
+    TouchMoving = clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).GetAttr("TouchMovingControl")
+    Data = {
+        "ControlPath": ControlPath,
+        "uiName": uiName,
+        "ModName": QingYunMod.ModObject.ModName
+    }
+    TouchMoving.append(Data)
+
+
+def __AddLongPressBack(uiName, ButtonPath, PressTime, BackFunc):
+    PressLongTimeDict[ButtonPath] = PressTime
+    PressLongBackFuncDict[ButtonPath] = BackFunc
+    ButtonObj = UIModComp(uiName).GetBaseUIControl(ButtonPath).asButton()
+    ButtonObj.AddTouchEventParams({"isSwallow": False})
+    ButtonObj.SetButtonTouchDownCallback(__StartCompTimer)
+    ButtonObj.SetButtonTouchUpCallback(__StopCompTimer)
+    ButtonObj.SetButtonTouchCancelCallback(__StopCompTimer)
+
+
+def TouchMovingModel(State):
+    clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).SetAttr("TouchMoving", State)

@@ -1,6 +1,6 @@
 from ... import SystemApi
 if SystemApi.ClientComp.CreateModAttr(SystemApi.levelId):
-    import RoleClient
+    import CameraClient
 
 if SystemApi.ServerComp.CreateModAttr(SystemApi.levelId):
-    import RoleServer
+    import CameraServer
