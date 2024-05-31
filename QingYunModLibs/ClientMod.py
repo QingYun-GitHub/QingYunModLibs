@@ -15,10 +15,11 @@ class _Timer(object):
         self.Data = Data
         self.Stop = False
         self.While = While
+        self.Destroy = False
 
 
 @ListenClient("OnScriptTickClient")
-def _ComputeTimerServer():
+def _ComputeTimerClient():
     for Timer in _TimerData:
         Time = Timer.Time
         if Timer.Stop:
@@ -31,10 +32,11 @@ def _ComputeTimerServer():
         try:
             Func(*Data)
         except Exception as error:
-            print "\n %s 延时器迭代过程中发生错误(Having An Error) at %s \n %s %s" % (Bcolors.ERROR, _ComputeTimerServer.__name__, Bcolors.ERROR, error)
+            print "\n %s 延时器迭代过程中发生错误(Having An Error) at %s \n %s %s" % (Bcolors.ERROR, _ComputeTimerClient.__name__, Bcolors.ERROR, error)
         if Timer.While:
             Timer.Time = Timer.DefaultTime
             continue
+        Timer.Destroy = True
         _TimerData.remove(Timer)
         del Timer
 

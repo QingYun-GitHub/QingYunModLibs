@@ -243,6 +243,7 @@ def CreateParticle(Effect, Pos, IsPlay=False):
 
     :param Effect: 需要创建的粒子特效配置文件路径，例如："effects/fire.json"
     :param Pos: 将要创建粒子特效的位置坐标
+    :param IsPlay: 是否立刻播放特效
     :return particleId 创建的粒子特效实体id
     """
     if ClientObj:
@@ -258,7 +259,10 @@ def CreateFrame(Effect, Pos=None, Rot=None, Scale=None, IsPlay=False):
 
     :param Effect: 需要创建的序列帧特效配置文件路径，例如："effects/fire.json"
     :param Pos: 将要创建序列帧特效的位置坐标
-    :return: particleId 创建的序列帧特效实体id
+    :param Rot: 将要创建序列帧特效的旋转角度
+    :param Scale: 将要创建序列帧特效的缩放大小
+    :param IsPlay: 是否立刻播放特效
+    :return: frameId 创建的序列帧特效实体id
     """
     if ClientObj:
         FrameId = ClientObj.CreateEngineSfxFromEditor(Effect, Pos, Rot, Scale)
@@ -269,11 +273,14 @@ def CreateFrame(Effect, Pos=None, Rot=None, Scale=None, IsPlay=False):
 
 def CreateFrameTexture(Effect, Pos=None, Rot=None, Scale=None, IsPlay=True):
     """
-    基于客户端的该接口用于根据MCS制作的序列帧特效配置文件生成序列帧特效
+    基于客户端的该接口用于使用序列帧图片直接生成序列帧特效
 
-    :param Effect: 需要创建的序列帧特效配置文件路径，例如："effects/fire.json"
+    :param Effect: 需要创建的序列帧特效配置文件路径，例如："textures/sfxs/effect.png"
     :param Pos: 将要创建序列帧特效的位置坐标
-    :return: particleId 创建的序列帧特效实体id
+    :param Rot: 将要创建序列帧特效的旋转角度
+    :param Scale: 将要创建序列帧特效的缩放大小
+    :param IsPlay: 是否立刻播放特效
+    :return: frameId 创建的序列帧特效实体id
     """
     if ClientObj:
         FrameId = ClientObj.CreateEngineSfx(Effect, Pos, Rot, Scale)
@@ -310,7 +317,7 @@ def GetClientModule(ModuleName):
     """
     获取全局框架环境中某一客户端模块文件(本地客户端)
 
-    :param ModuleName: 将要获取的模块名称
+    :param ModuleName: 将要获取的模块名称(无后缀)
     """
     if ModuleName in ClientComp.CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr("ClientModules"):
         return ClientComp.CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr("ClientModules")[ModuleName]

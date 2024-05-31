@@ -204,10 +204,10 @@ class _ClientSystem(clientApi.GetClientSystemCls()):
 
     def UnListenEvent(self, EventName, BackFunc):
         try:
-            getattr(self, BackFunc.__name__ + EventName)
+            getattr(self, BackFunc.__name__ + EventName + "Listen")
         except:
             return
-        self.UnListenForEvent(clientApi.GetEngineNamespace(), clientApi.GetEngineSystemName(), EventName, self, getattr(self, BackFunc.__name__ + EventName))
+        self.UnListenForEvent(clientApi.GetEngineNamespace(), clientApi.GetEngineSystemName(), EventName, self, getattr(self, BackFunc.__name__ + EventName + "Listen"))
 
     def UnListenCall(self, BackFunc):
         self.UnListenForEvent(ModObject.ModName, "Server", BackFunc.__name__, self, self.ListenBackForCall)
@@ -357,10 +357,10 @@ class _ServerSystem(serverApi.GetServerSystemCls()):
 
     def UnListenEvent(self, EventName, BackFunc):
         try:
-            getattr(self, BackFunc.__name__ + EventName)
+            getattr(self, BackFunc.__name__ + EventName + "Listen")
         except:
             return
-        self.UnListenForEvent(serverApi.GetEngineNamespace(), serverApi.GetEngineSystemName(), EventName, self, getattr(self, BackFunc.__name__+EventName))
+        self.UnListenForEvent(serverApi.GetEngineNamespace(), serverApi.GetEngineSystemName(), EventName, self, getattr(self, BackFunc.__name__+EventName + "Listen"))
 
     def UnListenCall(self, BackFunc):
         self.UnListenForEvent(ModObject.ModName, "Client", BackFunc.__name__, self, self.ListenBackForCall)

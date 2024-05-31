@@ -399,7 +399,8 @@ def SetCompMustPosition(uiName, CompPath, Pos):
     设置某一控件的绝对全局屏幕坐标
 
     :param str uiName: 需要进行操作的UI名称
-    :param str CompPath: 需要获取坐标的控件路径
+    :param str CompPath: 需要设置坐标的控件路径
+    :param tuple Pos: 控件绝对坐标
     """
     Pos_X, Pos_Y = Pos
     ParentPath = str(CompPath).split("/")
@@ -432,7 +433,7 @@ def SetCompAlpha(uiName, CompPath, Alpha=1.0):
 
 def GetCompAlpha(uiName, CompPath):
     """
-    设置某一控件的透明度
+    获取某一控件的透明度
 
     :param str uiName: 需要进行操作的UI名称
     :param str CompPath: 需要获取透明度控件的路径
@@ -813,6 +814,7 @@ class _CompData(object):
         设置控件播放位移动画
         :param TargetPos: 位移的终点坐标(绝对全局坐标)
         :param BeginningPos: 位移的起点坐标(绝对全局坐标)
+        :param AnimationTime: 动画持续时间
         """
         self.NowPos = BeginningPos
         if self.ClientTick not in _GameTickFunc:
@@ -842,6 +844,7 @@ class _CompData(object):
         设置控件播放透明度动画
         :param TargetAlpha: 位移的终点Alpha(透明度，取值0-1之间，0表示完全透明，1表示完全不透明)
         :param BeginningAlpha: 位移的起点Alpha(透明度，取值0-1之间，0表示完全透明，1表示完全不透明)
+        :param AnimationTime: 动画持续时间
         """
         self.NowAlpha = BeginningAlpha
         if self.ClientTick not in _GameTickFunc:
@@ -867,6 +870,7 @@ class _CompData(object):
         设置控件播放位移动画
         :param TargetScale: 位移的终点坐标(绝对全局坐标)
         :param BeginningScale: 位移的起点坐标(绝对全局坐标)
+        :param AnimationTime: 动画持续时间
         """
         self.NowScale = BeginningScale
         if self.ClientTick not in _GameTickFunc:

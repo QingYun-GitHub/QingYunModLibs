@@ -13,6 +13,7 @@ class _Timer(object):
         self.Data = Data
         self.Stop = False
         self.While = While
+        self.Destroy = False
 
 
 @ListenServer("OnScriptTickServer")
@@ -33,6 +34,7 @@ def _ComputeTimerServer():
         if Timer.While:
             Timer.Time = Timer.DefaultTime
             continue
+        Timer.Destroy = True
         _TimerData.remove(Timer)
         del Timer
 
