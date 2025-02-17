@@ -5,13 +5,13 @@ import SystemApi
 import UIScreen
 _UINameList = []
 _PluginsUINameList = []
-_Touch_Motion_X = 0
-_Touch_Motion_Y = 0
+_Touch_Motion_X_Dict = dict()
+_Touch_Motion_Y_Dict = dict()
 _ControlMotion = {}
 _MovingSpeed = ()
 _OldPos = None
 _TimeCold = True
-_Touch = False
+ScrollViewState = dict()
 
 
 @SystemApi.ListenClient("UiInitFinished")
@@ -26,40 +26,42 @@ def __UiInitFinished(event):
         clientApi.RegisterUI(SystemApi.QingYunMod.ModObject.ModName, uiName, SystemApi.QingYunMod.ModObject.ModName + '.QingYunModLibs.Plugins.' + PluginsName + "." + uiName + '.' + "UIScreen", uiName + '.main')
         clientApi.CreateUI(SystemApi.QingYunMod.ModObject.ModName, uiName, {"isHud": 1})
 
-    @UIScreen.AddGameTick
+    @SystemApi.ListenClient("OnScriptTickNonChaseFrameClient")
     def __TickFunc():
         __TouchMoving()
         TouchBack()
+        __TouchMovingForControl()
 
 
 def __TouchMoving():
-    if _Touch:
-        X, Y = clientApi.GetTouchPos()
-        Scroll_View = clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).GetAttr("Scroll_View")
-        if not Scroll_View: return
-        for View_Key in Scroll_View:
-            Scroll_ViewBlockPath = Scroll_View[View_Key]["BlockPath"]
-            uiName = Scroll_View[View_Key]["uiName"]
-            MoveModel = Scroll_View[View_Key]["MoveModel"]
-            ModName = Scroll_View[View_Key].get("ModName", None)
-            if ModName != SystemApi.QingYunMod.ModObject.ModName: continue
-            if MoveModel == "vertical":
-                Pos_X, Pos_Y = UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).GetPosition()
-                Pos = (Pos_X, Y + _Touch_Motion_Y)
-                UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).SetPosition(Pos)
-
-            if MoveModel == "horizontally":
-                Pos_X, Pos_Y = UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).GetPosition()
-                Pos = (X + _Touch_Motion_X, Pos_Y)
-                UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).SetPosition(Pos)
-
-            Rotate = Scroll_View[View_Key]["Rotate"]
-            if not Rotate: return
+    X, Y = clientApi.GetTouchPos()
+    Scroll_View = clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).GetAttr("Scroll_View")
+    if not Scroll_View: return
+    for View_Key in Scroll_View:
+        Scroll_ViewBlockPath = Scroll_View[View_Key]["BlockPath"]
+        uiName = Scroll_View[View_Key]["uiName"]
+        MoveModel = Scroll_View[View_Key]["MoveModel"]
+        ModName = Scroll_View[View_Key].get("ModName", None)
+        if not ScrollViewState.get(View_Key, False):continue
+        if ModName != SystemApi.QingYunMod.ModObject.ModName:continue
+        if not UIScreen.GetVisible(uiName, View_Key):continue
+        if MoveModel == "vertical":
             Pos_X, Pos_Y = UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).GetPosition()
-            RotateValue = math.tan(math.radians(Rotate))
-            Pos_X = Pos_Y*-RotateValue
-            Pos = (Pos_X, Pos_Y)
+            Pos = (Pos_X, Y + _Touch_Motion_Y_Dict.get(View_Key, 0))
             UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).SetPosition(Pos)
+
+        if MoveModel == "horizontally":
+            Pos_X, Pos_Y = UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).GetPosition()
+            Pos = (X + _Touch_Motion_X_Dict.get(View_Key, 0), Pos_Y)
+            UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).SetPosition(Pos)
+
+        Rotate = Scroll_View[View_Key]["Rotate"]
+        if not Rotate: return
+        Pos_X, Pos_Y = UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).GetPosition()
+        RotateValue = math.tan(math.radians(Rotate))
+        Pos_X = Pos_Y * -RotateValue
+        Pos = (Pos_X, Pos_Y)
+        UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).SetPosition(Pos)
 
 
 def TouchBack():
@@ -71,6 +73,7 @@ def TouchBack():
         MoveModel = Scroll_View[View_Key]["MoveModel"]
         ModName = Scroll_View[View_Key].get("ModName", None)
         if ModName != SystemApi.QingYunMod.ModObject.ModName: continue
+        if not UIScreen.GetVisible(uiName, View_Key): continue
         BPX, BPY = UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).GetPosition()
         BSX, BSY = Scroll_View[View_Key]["Size"]
         BMNX = BPX
@@ -85,21 +88,21 @@ def TouchBack():
         SMXY = SPY + SSY
         Fps = clientApi.GetEngineCompFactory().CreateGame(clientApi.GetLevelId()).GetFps()
         if MoveModel == "horizontally":
-            if BMNX < SMNX - 50:
-                Pos = (BMNX, BPY)
+            if BMNX > SMNX + 50:
+                Pos = (SMNX + 50, BPY)
                 UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).SetPosition(Pos)
 
-            if BMXX > SMXX + 50:
-                Pos = (SMXX + 50, BPY)
+            if BMXX < SMXX - 50:
+                Pos = (SMXX - BSX - 50, BPY)
                 UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).SetPosition(Pos)
 
-            if not _Touch:
-                if BMNX < SMNX:
-                    Pos = (round(BMNX + (SMNX - BMNX) / (1.5*Fps), 2), BPY)
+            if not ScrollViewState.get(View_Key, False):
+                if BMNX > SMNX:
+                    Pos = (round(BPX - (BMNX - SMNX) / (0.2*Fps), 2), BPY)
                     UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).SetPosition(Pos)
 
-                if BMXX > SMXX:
-                    Pos = (round(BMXX - (BMXX - SMXX) / (1.5*Fps), 2), BPY)
+                if BMXX < SMXX:
+                    Pos = (round(BPX + (SMXX - BMXX) / (0.2*Fps), 2), BPY)
                     UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).SetPosition(Pos)
 
         if MoveModel == "vertical":
@@ -111,18 +114,18 @@ def TouchBack():
                 Pos = (BPX, SMNY - (BSY - (SSY - 100)))
                 UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).SetPosition(Pos)
 
-            if not _Touch:
-                if BMNY >= SMNY:
-                    Pos = (BPX, BMNY - round((BMNY - SMNY)/(1.5*Fps), 2))
+            if not ScrollViewState.get(View_Key, False):
+                if BMNY > SMNY:
+                    Pos = (BPX, BMNY - round((BMNY - SMNY)/(0.2*Fps), 2))
                     UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).SetPosition(Pos)
 
-                elif BMXY <= SMXY:
+                elif BMXY < SMXY:
                     MustStick = SMNY - (BSY - (SSY))
-                    Pos = (BPX, BMNY + round((MustStick-BMNY)/(1.5*Fps), 2))
+                    Pos = (BPX, BMNY + round((MustStick-BMNY)/(0.2*Fps), 2))
                     UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).SetPosition(Pos)
 
         Rotate = Scroll_View[View_Key]["Rotate"]
-        if not Rotate: return
+        if not Rotate: continue
         Pos_X, Pos_Y = UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).GetPosition()
         RotateValue = math.tan(math.radians(Rotate))
         Pos_X = Pos_Y * -RotateValue
@@ -158,7 +161,6 @@ def AddUIForPlugins(uiName, PluginsName):
 
 @SystemApi.ListenClient("GetEntityByCoordEvent")
 def GetEntityByCoordEvent(event):
-    global _Touch, _Touch_Motion_X, _Touch_Motion_Y
     X, Y = clientApi.GetTouchPos()
     '''
     ModAttr中的Scroll_View是已经注册的滑动框数据
@@ -171,21 +173,22 @@ def GetEntityByCoordEvent(event):
         uiName = Scroll_View[View_Key]["uiName"]
         ModName = Scroll_View[View_Key].get("ModName", None)
         if ModName != SystemApi.QingYunMod.ModObject.ModName: continue
+        if not UIScreen.GetVisible(uiName, Scroll_ViewScreenPath): continue
         Pos_X, Pos_Y = UIScreen.GetCompMustPosition(uiName, Scroll_ViewScreenPath)
         if not Scroll_View[View_Key]["TouchSize"]:
             continue
         Size_X, Size_Y = Scroll_View[View_Key]["TouchSize"]
         PosX, PosY = UIScreen.UIModComp(uiName).GetBaseUIControl(Scroll_ViewBlockPath).GetPosition()
-        _Touch_Motion_X = PosX - X
-        _Touch_Motion_Y = PosY - Y
+        _Touch_Motion_X_Dict[View_Key] = PosX - X
+        _Touch_Motion_Y_Dict[View_Key] = PosY - Y
         if Pos_X < X < abs(Size_X) + Pos_X and Pos_Y < Y < abs(Size_Y) + Pos_Y:
-            _Touch = True
+            ScrollViewState[View_Key] = True
 
 
 @SystemApi.ListenClient("GetEntityByCoordReleaseClientEvent")
 def GetEntityByCoordRelease(event):
-    global _Touch
-    _Touch = False
+    for scrollView in ScrollViewState:
+        ScrollViewState[scrollView] = False
     for ControlData in _ControlMotion:
         Control = _ControlMotion[ControlData]
         Control["Touch"] = False
@@ -209,7 +212,6 @@ def GetEntityByCoordEventForTouchMoving(args):
             return
 
 
-@SystemApi.ListenClient("OnScriptTickClient")
 def __TouchMovingForControl():
     if not clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLevelId()).GetAttr("TouchMoving"):
         return
@@ -218,6 +220,8 @@ def __TouchMovingForControl():
         X, Y = clientApi.GetTouchPos()
         Scroll_ViewBlockPath = TouchValue["ControlPath"]
         uiName = TouchValue["uiName"]
+        if not UIScreen.GetVisible(uiName, Scroll_ViewBlockPath):
+            continue
         if Scroll_ViewBlockPath not in _ControlMotion:
             continue
         Touch = _ControlMotion[Scroll_ViewBlockPath]["Touch"]
@@ -227,7 +231,7 @@ def __TouchMovingForControl():
         try:
             UIScreen.SetCompMustPosition(uiName, Scroll_ViewBlockPath, Pos)
         except:
-            return
+            continue
 
 
 print "\n%s[QyMod] UIMod加载完毕" % SystemApi.Bcolors.SUC

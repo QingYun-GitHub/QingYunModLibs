@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import copy
-
 from SystemApi import *
 import mod.client.extraClientApi as clientApi
 import ClientApi
@@ -21,6 +19,14 @@ _PressLongBackFuncDict = {}
 _PressingCompTimerDict = {}
 _LongPressButtonDataList = []
 _CompDataLib = {}
+_CompVisibleDict = {}
+playerId = clientApi.GetLocalPlayerId()
+
+
+@ListenClient("OnScriptTickNonChaseFrameClient")
+def _GameTick():
+    for Func in _GameTickFunc:
+        Func()
 
 
 class UIScreen(_ScreenNode):
@@ -28,8 +34,18 @@ class UIScreen(_ScreenNode):
         _ScreenNode.__init__(self, ns, nm, par)
         self.NameSpace = ns
         ListenClientEvents("OnScriptTickClient", self.GetToggle)
+        self.ToggleInitMap = dict()
+        self.ToggleUpdate = False
+        self.tickNum = 0
+        _CompVisibleDict.clear()
+
+    def Destroy(self):
+        self.ToggleUpdate = False
+        UnListenClient("OnScriptTickClient", self.GetToggle)
 
     def Create(self):
+        self.ToggleUpdate = True
+        self.ToggleInitMap = dict()
         for ButtonPath in _ButtonCallBackDict:
             ButtonStateList = _ButtonCallBackDict[ButtonPath]["ButtonState"]
             BackFuncList = _ButtonCallBackDict[ButtonPath]["BackFunc"]
@@ -41,9 +57,10 @@ class UIScreen(_ScreenNode):
 
         def __StopCompTimer(args):
             ButtonPath = args['ButtonPath']
-            Timer = _PressingCompTimerDict[ButtonPath]
+            Timer = _PressingCompTimerDict.get(ButtonPath, None)
             ClientComp.CreateGame(levelId).CancelTimer(Timer)
-            _PressingCompTimerDict.pop(ButtonPath)
+            if ButtonPath in _PressingCompTimerDict:
+                _PressingCompTimerDict.pop(ButtonPath)
             args["IsPress"] = False
             BackFunc = _PressLongBackFuncDict[ButtonPath]
             BackFunc(args)
@@ -70,8 +87,11 @@ class UIScreen(_ScreenNode):
 
     def Button_Control(self, ButtonPath, ButtonState, BackFunc, Reload=False):
         if (not _ButtonCallBackDict[ButtonPath]["ButtonObj"]) or Reload:
-            _ButtonCallBackDict[ButtonPath]["ButtonObj"] = self.GetBaseUIControl(ButtonPath).asButton()
-            self.GetBaseUIControl(ButtonPath).asButton().AddTouchEventParams({"isSwallow": _ButtonCallBackDict[ButtonPath]["IsSwallow"]})
+            try:
+                _ButtonCallBackDict[ButtonPath]["ButtonObj"] = self.GetBaseUIControl(ButtonPath).asButton()
+                self.GetBaseUIControl(ButtonPath).asButton().AddTouchEventParams({"isSwallow": _ButtonCallBackDict[ButtonPath]["IsSwallow"]})
+            except:
+                print "[ERROR]Register Button Failed at %s" % ButtonPath
         ButtonObj = _ButtonCallBackDict[ButtonPath]["ButtonObj"]
         ControlDict = {
             "Down": ButtonObj.SetButtonTouchDownCallback,
@@ -83,22 +103,16 @@ class UIScreen(_ScreenNode):
             "MoveIn": ButtonObj.SetButtonTouchMoveInCallback,
             "MoveOut": ButtonObj.SetButtonTouchMoveOutCallback
         }
-        print ButtonPath, ButtonState, BackFunc
         ControlDict[ButtonState](BackFunc)
 
-    @_ViewBinder.binding(_ViewBinder.BF_BindString, "#tick_text_show")
-    def GameTick(self):
-        for TickFunc in _GameTickFunc:
-            TickFunc()
-
-    def Update(self):
-        for Func in _GameTickFunc:
-            Func()
-
     def GetToggle(self):
-        if not clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr(self.NameSpace+"_"+"ToggleBack"):
-            clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).SetAttr(self.NameSpace + "_" + "ToggleBack", {})
-        for ToggleControl in clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr(self.NameSpace+"_"+"ToggleBack"):
+        self.tickNum += 1
+        if self.tickNum <= 10:
+            return
+        ModAttr = clientApi.GetEngineCompFactory().CreateModAttr(playerId)
+        if not ModAttr.GetAttr(self.NameSpace+"_"+"ToggleBack"):
+            ModAttr.SetAttr(self.NameSpace + "_" + "ToggleBack", {})
+        for ToggleControl in ModAttr.GetAttr(self.NameSpace+"_"+"ToggleBack"):
             Toggle = ToggleControl.split("/")
             Last = Toggle.pop()
             NewToggle = ""
@@ -106,22 +120,32 @@ class UIScreen(_ScreenNode):
                 if Tog != "":
                     NewToggle += "/" + Tog
 
-            if not self.GetBaseUIControl(NewToggle): continue
+            if not self.ToggleUpdate: continue
 
-            State = self.GetBaseUIControl(NewToggle).asSwitchToggle().GetToggleState("/" + Last)
+            BaseUIControlComp = self.GetBaseUIControl(NewToggle).asSwitchToggle()
 
-            if not clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr(self.NameSpace):
-                clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).SetAttr(self.NameSpace, {})
+            StateData = ModAttr.GetAttr(self.NameSpace)
+            
+            if not StateData:
+                StateData = {}
 
-            StateData = clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr(self.NameSpace)
+            if not self.ToggleInitMap.get(ToggleControl, False):
+                BaseUIControlComp.SetToggleState(StateData.get(ToggleControl, False))
+                self.ToggleInitMap[ToggleControl] = True
+                BackFunc = ModAttr.GetAttr(self.NameSpace + "_" + "ToggleBack")[ToggleControl]
+                BackFunc(StateData.get(ToggleControl, False))
+                ModAttr.SetAttr(self.NameSpace, StateData)
+                continue
 
-            if State != clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr(self.NameSpace).get(ToggleControl, None):
-                BackFunc = clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr(self.NameSpace+"_"+"ToggleBack")[ToggleControl]
+            State = BaseUIControlComp.GetToggleState("/" + Last)
+
+            if State != ModAttr.GetAttr(self.NameSpace).get(ToggleControl, None):
+                BackFunc = ModAttr.GetAttr(self.NameSpace+"_"+"ToggleBack")[ToggleControl]
                 BackFunc(State)
 
             StateData[ToggleControl] = State
 
-            clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).SetAttr(self.NameSpace, StateData)
+            ModAttr.SetAttr(self.NameSpace, StateData)
 
 
 def ReloadButtonBack(uiName):
@@ -282,6 +306,9 @@ def SetVisible(uiName, CompPath, Visible=True):
     :param CompPath: 控件路径
     :param Visible: 是否显示（True为显示，False为不显示）
     """
+    if Visible == GetVisible(uiName, CompPath):
+        return
+    _CompVisibleDict[CompPath] = Visible
     UIModComp(uiName).GetBaseUIControl(CompPath).SetVisible(Visible)
 
 
@@ -293,7 +320,10 @@ def GetVisible(uiName, CompPath):
     :param CompPath: 控件路径
     :return: 显示状态（True为显示，False为不显示）
     """
-    return UIModComp(uiName).GetBaseUIControl(CompPath).GetVisible()
+    if CompPath not in _CompVisibleDict:
+        _CompVisibleDict[CompPath] = UIModComp(uiName).GetBaseUIControl(CompPath).GetVisible()
+    Visible = _CompVisibleDict[CompPath]
+    return Visible
 
 
 def GetIsHud(uiName):
@@ -414,8 +444,6 @@ def SetCompMustPosition(uiName, CompPath, Pos):
         X, Y = UIModComp(uiName).GetBaseUIControl(NewComp).GetPosition()
         Pos_X = Pos_X - X
         Pos_Y = Pos_Y - Y
-    CompData = GetCompData(uiName, CompPath)
-    if CompData: CompData.NowPos = (Pos_X, Pos_Y)
     UIModComp(uiName).GetBaseUIControl(CompPath).SetPosition((Pos_X, Pos_Y))
 
 
@@ -516,8 +544,8 @@ class __Gird(object):
             RemoveComponent(self.uiName, GirdBlock)
         _GirdBlockPathDict[self.GirdScreenPath] = {}
         GirdBlockPath = {}
-        for X in range(1, BlockNum_X+1):
-            for Y in range(1, BlockNum_Y+1):
+        for Y in range(1, BlockNum_Y+1):
+            for X in range(1, BlockNum_X+1):
                 if TestBySelf:
                     NewBlockPath = self.AddBlock()
                     GirdBlockPath[str(X)+"."+str(Y)] = NewBlockPath
@@ -663,11 +691,11 @@ def AddToggleBack(uiName, ToggleControl, BackFunc):
     :param ToggleControl: 指定开关控件路径(控件需填写到核心开关控件处，一般为"/this_toggle")
     :param BackFunc: 开关交互触发绑定的回调函数
     """
-    ToggleBackDict = clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr(uiName+"_"+"ToggleBack")
+    ToggleBackDict = clientApi.GetEngineCompFactory().CreateModAttr(playerId).GetAttr(uiName+"_"+"ToggleBack")
     if not ToggleBackDict:
         ToggleBackDict = {}
     ToggleBackDict[ToggleControl] = BackFunc
-    clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).SetAttr(uiName+"_"+"ToggleBack", ToggleBackDict)
+    clientApi.GetEngineCompFactory().CreateModAttr(playerId).SetAttr(uiName+"_"+"ToggleBack", ToggleBackDict)
 
 
 def AddToggle(uiName, ToggleControl):
@@ -678,13 +706,12 @@ def AddToggle(uiName, ToggleControl):
     :param ToggleControl: 指定开关控件路径(控件需填写到核心开关控件处，一般为"/this_toggle")
     """
     def Add(BackFunc):
-        ToggleBackDict = clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).GetAttr(
+        ToggleBackDict = clientApi.GetEngineCompFactory().CreateModAttr(playerId).GetAttr(
             uiName + "_" + "ToggleBack")
         if not ToggleBackDict:
             ToggleBackDict = {}
         ToggleBackDict[ToggleControl] = BackFunc
-        clientApi.GetEngineCompFactory().CreateModAttr(clientApi.GetLocalPlayerId()).SetAttr(
-            uiName + "_" + "ToggleBack", ToggleBackDict)
+        clientApi.GetEngineCompFactory().CreateModAttr(playerId).SetAttr(uiName + "_" + "ToggleBack", ToggleBackDict)
         return BackFunc
     return Add
 
@@ -795,16 +822,27 @@ class _CompData(object):
         if uiName+"|"+CompPath in _CompDataLib:
             del _CompDataLib[uiName + "|" + CompPath]
         _CompDataLib[uiName+"|"+CompPath] = self
-        self.ClientTickFuncList = []
+        self.ClientTickFuncDict = {
+            "UpdateCompPos": None,
+            "UpdateCompScale": None,
+            "UpdateCompAlpha": None
+        }
 
     def ClientTick(self):
-        for Func in self.ClientTickFuncList:
-            Func()
+        if self.ClientTickFuncDict["UpdateCompPos"]:
+            self.ClientTickFuncDict["UpdateCompPos"]()
+
+        if self.ClientTickFuncDict["UpdateCompScale"]:
+            self.ClientTickFuncDict["UpdateCompScale"]()
+
+        if self.ClientTickFuncDict["UpdateCompAlpha"]:
+            self.ClientTickFuncDict["UpdateCompAlpha"]()
 
     def DestroyAnimation(self, AnimationType):
-        for Func in self.ClientTickFuncList:
-            if Func.__name__ == AnimationType:
-                self.ClientTickFuncList.remove(Func)
+        self.ClientTickFuncDict[AnimationType] = None
+
+    def OpenAnimation(self, Function):
+        self.ClientTickFuncDict[Function.__name__] = Function
 
     def __del__(self):
         RemoveGameTickFunc(self.ClientTick)
@@ -827,17 +865,17 @@ class _CompData(object):
             TPX, TPY = TargetPos
             Mx = TPX - BPX
             My = TPY - BPY
-            if abs(Mx+My) < 0.1:
-                self.ClientTickFuncList.remove(UpdateCompPos)
-                RemoveGameTickFunc(self.ClientTick)
+            if abs(Mx+My) < 0.01:
+                self.DestroyAnimation("UpdateCompPos")
                 self.NowPos = TargetPos
             else:
                 Fps = ClientApi.Generic.Tool.GetFps()
-                self.NowPos = (BPX+Mx / (Fps * AnimationTime), BPY+My / (Fps * AnimationTime))
+                self.NowPos = (BPX+Mx / (Fps * AnimationTime * 0.2), BPY+My / (Fps * AnimationTime * 0.2))
 
-            SetCompMustPosition(self.uiName, self.CompPath, self.NowPos)
+            if UIModComp(self.uiName).GetBaseUIControl(self.CompPath):
+                SetCompMustPosition(self.uiName, self.CompPath, self.NowPos)
 
-        self.ClientTickFuncList.append(UpdateCompPos)
+        self.OpenAnimation(UpdateCompPos)
 
     def SetCompAlphaAnimation(self, TargetAlpha, BeginningAlpha=0.0, AnimationTime=1):
         """
@@ -855,21 +893,22 @@ class _CompData(object):
         def UpdateCompAlpha():
             Motion = TargetAlpha-self.NowAlpha
             if abs(Motion) <= 0.01:
-                self.ClientTickFuncList.remove(UpdateCompAlpha)
-                RemoveGameTickFunc(self.ClientTick)
+                self.DestroyAnimation("UpdateCompAlpha")
                 self.NowAlpha = TargetAlpha
             else:
                 Fps = ClientApi.Generic.Tool.GetFps()
-                self.NowAlpha += Motion/(AnimationTime*Fps)
+                self.NowAlpha += Motion/(AnimationTime*Fps * 0.2)
 
-            SetCompAlpha(self.uiName, self.CompPath, self.NowAlpha)
-        self.ClientTickFuncList.append(UpdateCompAlpha)
+            if UIModComp(self.uiName).GetBaseUIControl(self.CompPath):
+                SetCompAlpha(self.uiName, self.CompPath, self.NowAlpha)
+
+        self.OpenAnimation(UpdateCompAlpha)
 
     def SetCompScaleAnimation(self, TargetScale=(0, 0), BeginningScale=(0, 0), AnimationTime=1, resizeChildren=False):
         """
-        设置控件播放位移动画
-        :param TargetScale: 位移的终点坐标(绝对全局坐标)
-        :param BeginningScale: 位移的起点坐标(绝对全局坐标)
+        设置控件播放缩放动画
+        :param TargetScale: 缩放的最终大小
+        :param BeginningScale: 缩放的初始大小
         :param AnimationTime: 动画持续时间
         """
         self.NowScale = BeginningScale
@@ -883,17 +922,17 @@ class _CompData(object):
             TPX, TPY = TargetScale
             Mx = TPX - BPX
             My = TPY - BPY
-            if abs(Mx+My) < 0.1:
-                self.ClientTickFuncList.remove(UpdateCompScale)
-                RemoveGameTickFunc(self.ClientTick)
+            if abs(Mx+My) < 0.01:
+                self.DestroyAnimation("UpdateCompScale")
                 self.NowScale = TargetScale
             else:
                 Fps = ClientApi.Generic.Tool.GetFps()
-                self.NowScale = (BPX+Mx / (Fps * AnimationTime), BPY+My / (Fps * AnimationTime))
+                self.NowScale = (BPX+Mx / (Fps * AnimationTime * 0.2), BPY+My / (Fps * AnimationTime * 0.2))
 
-            SetCompSize(self.uiName, self.CompPath, self.NowScale, resizeChildren)
+            if UIModComp(self.uiName).GetBaseUIControl(self.CompPath):
+                SetCompSize(self.uiName, self.CompPath, self.NowScale, resizeChildren)
 
-        self.ClientTickFuncList.append(UpdateCompScale)
+        self.OpenAnimation(UpdateCompScale)
 
 
 print "\n%s[QyMod] UIScreen加载完毕" % Bcolors.SUC

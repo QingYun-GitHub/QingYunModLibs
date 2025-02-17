@@ -79,14 +79,14 @@ class Block:
 		return comp.GetBlock(pos)
 
 	@staticmethod
-	def GetBlockClip(pos, dimensionId):
+	def GetBlockClip(pos):
 		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-		return comp.GetBlockClip(pos, dimensionId)
+		return comp.GetBlockClip(pos)
 
 	@staticmethod
-	def GetBlockCollision(pos, dimensionId):
+	def GetBlockCollision(pos):
 		comp = clientApi.GetEngineCompFactory().CreateBlockInfo(levelId)
-		return comp.GetBlockCollision(pos, dimensionId)
+		return comp.GetBlockCollision(pos)
 
 	@staticmethod
 	def GetDestroyTotalTime(blockName, itemName):

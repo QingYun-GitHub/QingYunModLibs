@@ -158,8 +158,18 @@ class Particle:
 
 	@staticmethod
 	def Bind(particleEntityId, bindEntityId, offset, rot, correction):
-		comp = clientApi.GetEngineCompFactory().CreateParticleEntityBind(particleEntityId)
-		return comp.Bind(bindEntityId, offset, rot, correction)
+		import traceback
+		import StringIO
+		try:
+			comp = clientApi.GetEngineCompFactory().CreateParticleEntityBind(particleEntityId)
+			return comp.Bind(bindEntityId, offset, rot, correction)
+		except:
+			STR = StringIO.StringIO()
+			traceback.print_exc()
+			traceback.print_exc(file=STR)
+			Error = STR.getvalue()
+			clientApi.GetEngineCompFactory().CreateGame(levelId).SetTipMessage(Error)
+
 
 	@staticmethod
 	def GetParticleEmissionRate(particleEntityId):

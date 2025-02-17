@@ -148,7 +148,7 @@ class Render:
 
 	@staticmethod
 	def AddPlayerSoundEffect(playerId, soundKey, soundName):
-		comp = clientApi.GetEngineCompFactory().CreateActorRender()
+		comp = clientApi.GetEngineCompFactory().CreateActorRender(playerId)
 		return comp.AddPlayerSoundEffect(soundKey, soundName)
 
 	@staticmethod

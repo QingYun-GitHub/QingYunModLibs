@@ -3,6 +3,58 @@ from ..ClientMod import *
 import copy
 import StateMachine
 playerId = clientApi.GetLocalPlayerId()
+LoadingMap = dict()
+
+
+@ListenClient("AddPlayerCreatedClientEvent")
+def OnRenderPlayer(args):
+    if args["playerId"] != playerId:
+        CallServer("OnAddPlayerEvent", [playerId, args["playerId"]])
+
+
+@Call(playerId)
+def ReloadPlayerRes(args):
+    PlayerId, EntityRenderData = args
+    RenderComp = ClientComp.CreateActorRender(PlayerId)
+    ResFuncMap = {
+        "geometry": RenderComp.AddPlayerGeometry,
+        "texture": RenderComp.AddPlayerTexture,
+        "material": RenderComp.AddPlayerRenderMaterial,
+        "animation": RenderComp.AddPlayerAnimation,
+        "script_animate": RenderComp.AddPlayerScriptAnimate,
+        "render_controller": RenderComp.AddPlayerRenderController,
+        "animation_controller": RenderComp.AddPlayerAnimationController
+    }
+    RemoveResFuncMap = {
+        "render_controller": RenderComp.RemovePlayerRenderController,
+        "animation_controller": RenderComp.RemovePlayerAnimationController
+    }
+    for ResType in EntityRenderData:
+        ResData = EntityRenderData[ResType]
+        for ResKey in ResData:
+            if ResType == "set_molang":
+                ResValue = ResData[ResKey]
+                ResKey = ResKey.replace("__", "_")
+                SetMolang(str(ResKey), ResValue, False, PlayerId)
+                continue
+            if ResType == "reg_molang":
+                ResValue = ResData[ResKey]
+                ResKey = ResKey.replace("__", "_")
+                RegisterMolang(str(ResKey), ResValue, False)
+                continue
+            if ResType == "set_mod_attr":
+                ResValue = ResData[ResKey]
+                SetModAttr(PlayerId, ResKey, ResValue, False)
+                continue
+            ResValue = ResData[ResKey]
+            if ResValue is None:
+                RemoveResFuncMap[ResType](ResKey)
+            else:
+                if ResType == "script_animate":
+                    ResFuncMap[ResType](ResKey, ResValue, True)
+                ResFuncMap[ResType](ResKey, ResValue)
+    RenderComp.RebuildPlayerRender()
+
 
 
 class EntityRender(object):
@@ -22,12 +74,6 @@ class EntityRender(object):
             "AnimationControllerCondition": ""
         }
 
-    def __ExecuteFunc(self, Func, RenderData, AllClient=False):
-        if AllClient:
-            MappingCall(Func.__name__, RenderData)
-            return
-        Func(RenderData)
-
     def RebuildRenderController(self, actorIdentifier, AllClient=False):
         """
         重载实体渲染控制器
@@ -38,7 +84,7 @@ class EntityRender(object):
         RenderData = copy.copy(self.RenderData)
         RenderData["actorIdentifier"] = actorIdentifier
         Func = _RebuildRenderController
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
 
     def AddEntityGeometry(self, actorIdentifier, GeometryKey, GeometryName, AllClient=False):
         """
@@ -54,7 +100,7 @@ class EntityRender(object):
         RenderData["GeometryKey"] = GeometryKey
         RenderData["GeometryName"] = GeometryName
         Func = _AddEntityGeometry
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
 
     def AddEntityTexture(self, actorIdentifier, TextureKey, Texture, AllClient=False):
         """
@@ -70,7 +116,7 @@ class EntityRender(object):
         RenderData["TextureKey"] = TextureKey
         RenderData["Texture"] = Texture
         Func = _AddEntityTexture
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
 
     def AddEntityMaterial(self, actorIdentifier, MaterialKey, Material, AllClient=False):
         """
@@ -86,7 +132,7 @@ class EntityRender(object):
         RenderData["MaterialKey"] = MaterialKey
         RenderData["Material"] = Material
         Func = _AddEntityMaterial
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
 
     def AddEntityRenderController(self, actorIdentifier, RenderController, RenderControllerCondition, AllClient=False):
         """
@@ -102,7 +148,7 @@ class EntityRender(object):
         RenderData["RenderController"] = RenderController
         RenderData["RenderControllerCondition"] = RenderControllerCondition
         Func = _AddEntityRenderController
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
 
     def AddEntityAnimationController(self, actorIdentifier, AnimationController, AnimationControllerCondition, AllClient=False):
         """
@@ -118,7 +164,20 @@ class EntityRender(object):
         RenderData["AnimationController"] = AnimationController
         RenderData["AnimationControllerCondition"] = AnimationControllerCondition
         Func = _AddEntityAnimationController
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
+
+    def RemoveEntityRenderController(self, actorIdentifier, RenderControllerController, AllClient=False):
+        """
+        为玩家删除渲染控制器
+
+        :param RenderControllerController: 渲染控制器名称
+        :param AllClient: 是否同步所有客户端
+        """
+        RenderData = copy.copy(self.RenderData)
+        RenderData["actorIdentifier"] = actorIdentifier
+        RenderData["RenderController"] = RenderControllerController
+        Func = _RemoveEntityRenderController
+        ExecuteFunc(Func, RenderData, AllClient)
 
 
 @Call(playerId)
@@ -179,8 +238,18 @@ def _AddEntityAnimationController(args):
     RenderComp.AddActorAnimationController(actorIdentifier, AnimationController, AnimationControllerCondition)
 
 
+@Call(playerId)
+def _RemoveEntityRenderController(args):
+    entityId = args["entityId"]
+    RenderComp = ClientComp.CreateActorRender(entityId)
+    actorIdentifier = args["actorIdentifier"]
+    RenderController = args["RenderController"]
+    RenderComp.RemoveActorRenderController(actorIdentifier, RenderController)
+
+
 class PlayerRender(object):
     def __init__(self, playerId):
+        self.playerId = playerId
         self.RenderData = {
             "entityId": playerId,
             "GeometryKey": "",
@@ -195,12 +264,6 @@ class PlayerRender(object):
             "AnimationControllerCondition": ""
         }
 
-    def __ExecuteFunc(self, Func, RenderData, AllClient=False):
-        if AllClient:
-            MappingCall(Func.__name__, RenderData)
-            return
-        Func(RenderData)
-
     def RebuildPlayerRenderController(self, AllClient=False):
         """
         重载玩家渲染控制器
@@ -209,7 +272,7 @@ class PlayerRender(object):
         """
         RenderData = copy.copy(self.RenderData)
         Func = _RebuildPlayerRenderController
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
 
     def AddPlayerGeometry(self, GeometryKey, GeometryName, AllClient=False):
         """
@@ -223,7 +286,9 @@ class PlayerRender(object):
         RenderData["GeometryKey"] = GeometryKey
         RenderData["GeometryName"] = GeometryName
         Func = _AddPlayerGeometry
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
+        if AllClient:
+            CallServer("Update_AddPlayerGeometry", RenderData, PackageData=True)
 
     def AddPlayerTexture(self, TextureKey, Texture, AllClient=False):
         """
@@ -237,7 +302,9 @@ class PlayerRender(object):
         RenderData["TextureKey"] = TextureKey
         RenderData["Texture"] = Texture
         Func = _AddPlayerTexture
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
+        if AllClient:
+            CallServer("Update_AddPlayerTexture", RenderData, PackageData=True)
 
     def AddPlayerMaterial(self, MaterialKey, Material, AllClient=False):
         """
@@ -251,7 +318,9 @@ class PlayerRender(object):
         RenderData["MaterialKey"] = MaterialKey
         RenderData["Material"] = Material
         Func = _AddPlayerMaterial
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
+        if AllClient:
+            CallServer("Update_AddPlayerMaterial", RenderData, PackageData=True)
 
     def AddPlayerRenderController(self, RenderController, RenderControllerCondition, AllClient=False):
         """
@@ -265,7 +334,9 @@ class PlayerRender(object):
         RenderData["RenderController"] = RenderController
         RenderData["RenderControllerCondition"] = RenderControllerCondition
         Func = _AddPlayerRenderController
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
+        if AllClient:
+            CallServer("Update_AddPlayerRenderController", RenderData, PackageData=True)
 
     def AddPlayerAnimation(self, AnimationKey, AnimationName, AllClient=False):
         """
@@ -279,9 +350,11 @@ class PlayerRender(object):
         RenderData["AnimationKey"] = AnimationKey
         RenderData["AnimationName"] = AnimationName
         Func = _AddPlayerAnimation
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
+        if AllClient:
+            CallServer("Update_AddPlayerAnimation", RenderData, PackageData=True)
 
-    def AddPlayerScriptAnimate(self, AnimationKey, Condition, AutoReplace=False, AllClient=False):
+    def AddPlayerScriptAnimate(self, AnimationKey, Condition, AutoReplace=True, AllClient=False):
         """
         为玩家(添加/覆盖)动画或动画控制器到scripts/animate节点
 
@@ -295,7 +368,9 @@ class PlayerRender(object):
         RenderData["Condition"] = Condition
         RenderData["AutoReplace"] = AutoReplace
         Func = _AddPlayerScriptAnimate
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
+        if AllClient:
+            CallServer("Update_AddPlayerScriptAnimate", RenderData, PackageData=True)
 
     def AddPlayerAnimationController(self, AnimationController, AnimationControllerCondition, AllClient=False):
         """
@@ -309,7 +384,9 @@ class PlayerRender(object):
         RenderData["AnimationController"] = AnimationController
         RenderData["AnimationControllerCondition"] = AnimationControllerCondition
         Func = _AddPlayerAnimationController
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
+        if AllClient:
+            CallServer("Update_AddPlayerAnimationController", RenderData, PackageData=True)
 
     def RemovePlayerAnimationController(self, AnimationController, AllClient=False):
         """
@@ -321,7 +398,9 @@ class PlayerRender(object):
         RenderData = copy.copy(self.RenderData)
         RenderData["AnimationController"] = AnimationController
         Func = _RemovePlayerAnimationController
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
+        if AllClient:
+            CallServer("Update_RemovePlayerAnimationController", RenderData, PackageData=True)
 
     def RemovePlayerRenderController(self, RenderController, AllClient=False):
         """
@@ -333,7 +412,9 @@ class PlayerRender(object):
         RenderData = copy.copy(self.RenderData)
         RenderData["RenderController"] = RenderController
         Func = _RemovePlayerRenderController
-        self.__ExecuteFunc(Func, RenderData, AllClient)
+        ExecuteFunc(Func, RenderData, AllClient)
+        if AllClient:
+            CallServer("Update_RemovePlayerRenderController", RenderData, PackageData=True)
 
 
 @Call(playerId)
@@ -347,8 +428,8 @@ def _RebuildPlayerRenderController(args):
 def _AddPlayerGeometry(args):
     entityId = args["entityId"]
     RenderComp = ClientComp.CreateActorRender(entityId)
-    GeometryKey = args["GeometryKey"]
-    GeometryName = args["GeometryName"]
+    GeometryKey = str(args["GeometryKey"])
+    GeometryName = str(args["GeometryName"])
     RenderComp.AddPlayerGeometry(GeometryKey, GeometryName)
 
 
@@ -356,8 +437,8 @@ def _AddPlayerGeometry(args):
 def _AddPlayerTexture(args):
     entityId = args["entityId"]
     RenderComp = ClientComp.CreateActorRender(entityId)
-    TextureKey = args["TextureKey"]
-    Texture = args["Texture"]
+    TextureKey = str(args["TextureKey"])
+    Texture = str(args["Texture"])
     RenderComp.AddPlayerTexture(TextureKey, Texture)
 
 
@@ -365,8 +446,8 @@ def _AddPlayerTexture(args):
 def _AddPlayerMaterial(args):
     entityId = args["entityId"]
     RenderComp = ClientComp.CreateActorRender(entityId)
-    MaterialKey = args["MaterialKey"]
-    Material = args["Material"]
+    MaterialKey = str(args["MaterialKey"])
+    Material = str(args["Material"])
     RenderComp.AddPlayerRenderMaterial(MaterialKey, Material)
 
 
@@ -374,8 +455,8 @@ def _AddPlayerMaterial(args):
 def _AddPlayerRenderController(args):
     entityId = args["entityId"]
     RenderComp = ClientComp.CreateActorRender(entityId)
-    RenderController = args["RenderController"]
-    RenderControllerCondition = args["RenderControllerCondition"]
+    RenderController = str(args["RenderController"])
+    RenderControllerCondition = str(args["RenderControllerCondition"])
     RenderComp.AddPlayerRenderController(RenderController, RenderControllerCondition)
 
 
@@ -383,8 +464,8 @@ def _AddPlayerRenderController(args):
 def _AddPlayerAnimation(args):
     entityId = args["entityId"]
     RenderComp = ClientComp.CreateActorRender(entityId)
-    AnimationKey = args["AnimationKey"]
-    AnimationName = args["AnimationName"]
+    AnimationKey = str(args["AnimationKey"])
+    AnimationName = str(args["AnimationName"])
     RenderComp.AddPlayerAnimation(AnimationKey, AnimationName)
 
 
@@ -392,8 +473,8 @@ def _AddPlayerAnimation(args):
 def _AddPlayerScriptAnimate(args):
     entityId = args["entityId"]
     RenderComp = ClientComp.CreateActorRender(entityId)
-    AnimationKey = args["AnimationKey"]
-    Condition = args["Condition"]
+    AnimationKey = str(args["AnimationKey"])
+    Condition = str(args["Condition"])
     AutoReplace = args["AutoReplace"]
     RenderComp.AddPlayerScriptAnimate(AnimationKey, Condition, AutoReplace)
 
@@ -402,8 +483,8 @@ def _AddPlayerScriptAnimate(args):
 def _AddPlayerAnimationController(args):
     entityId = args["entityId"]
     RenderComp = ClientComp.CreateActorRender(entityId)
-    AnimationController = args["AnimationController"]
-    AnimationControllerCondition = args["AnimationControllerCondition"]
+    AnimationController = str(args["AnimationController"])
+    AnimationControllerCondition = str(args["AnimationControllerCondition"])
     RenderComp.AddPlayerAnimationController(AnimationController, AnimationControllerCondition)
 
 
@@ -423,33 +504,67 @@ def _RemovePlayerRenderController(args):
     RenderComp.RemovePlayerRenderController(RenderController)
 
 
-def Inside():
-    @Call(playerId)
-    def __SetMolang(args):
-        PlayerId, Query, Value = args
-        ClientApi.Entity.Molang.Set(PlayerId, Query, Value)
-
-    @Call(playerId)
-    def __Register(args):
-        Query, Value = args
-        ClientApi.Entity.Molang.Register(Query, Value)
+@Call(playerId)
+def __SetMolang(args):
+    EntityId = str(args["entityId"])
+    QueryId = str(args["queryId"])
+    Value = args["value"]
+    ClientApi.Entity.Molang.Set(EntityId, QueryId, Value)
 
 
-Inside()
+@Call(playerId)
+def __SetModAttr(args):
+    EntityId = str(args["entityId"])
+    ModAttr = str(args["modAttr"])
+    Value = args["value"]
+    ClientApi.Entity.ExtraAttribute.SetAttr(EntityId, ModAttr, Value)
 
 
-def SetMolang(QueryId, Value, AllClient):
+@Call(playerId)
+def __Register(args):
+    QueryId = str(args["queryId"])
+    Value = args["value"]
+    ClientApi.Entity.Molang.Register(QueryId, Value)
+
+
+def ExecuteFunc(Func, RenderData, AllClient=False):
     if AllClient:
-        MappingCall("__SetMolang", [playerId, QueryId, Value])
+        MappingCall(Func.__name__, RenderData)
         return
-    ClientApi.Entity.Molang.Set(playerId, QueryId, Value)
+    Func(RenderData)
+
+
+def SetMolang(QueryId, Value, AllClient, EntityId=playerId):
+    RenderData = {
+        "entityId": EntityId,
+        "queryId": str(QueryId),
+        "value": float(Value),
+    }
+    ExecuteFunc(__SetMolang, RenderData, AllClient)
+    if AllClient:
+        CallServer("Update_SetMolang", RenderData, PackageData=True)
+
+
+def SetModAttr(EntityId, ModAttr, Value, AllClient):
+    RenderData = {
+        "entityId": EntityId,
+        "modAttr": ModAttr,
+        "value": Value,
+    }
+    ExecuteFunc(__SetModAttr, RenderData, AllClient)
+    if AllClient:
+        CallServer("Update_SetModAttr", RenderData, PackageData=True)
 
 
 def RegisterMolang(QueryId, Value, AllClient):
+    RenderData = {
+        "entityId": clientApi.GetLocalPlayerId(),
+        "queryId": QueryId,
+        "value": float(Value),
+    }
+    ExecuteFunc(__Register, RenderData, AllClient)
     if AllClient:
-        MappingCall("__Register", [QueryId, Value])
-        return
-    ClientApi.Entity.Molang.Register(QueryId, Value)
+        CallServer("Update_RegMolang", RenderData, PackageData=True)
 
 
 class Monitor(object):
@@ -480,6 +595,7 @@ class SuperAnimationController(object):
 
     def InitAnimationState(self):
         PR = PlayerRender(playerId)
+        DefaultState = None
         for Attr in dir(self):
             if Attr.split("_")[0] == "State":
                 StateModel = self.__getattribute__(Attr)()
@@ -493,10 +609,14 @@ class SuperAnimationController(object):
                 State.MustKeepTime = StateModel.MustKeepTime
                 State.ReloadStateAnimation = StateModel.ReloadStateAnimation
                 State.MovingAnimation = StateModel.MovingAnimation
+                if StateModel.DefaultState:
+                    DefaultState = State
                 if not self.SelfStateMachine:
-                    self.SelfStateMachine = StateMachine.StateMachine(State)
+                    self.SelfStateMachine = StateMachine.AnimationStateMachine(State)
                     continue
                 self.SelfStateMachine.NewState(State)
+        if DefaultState:
+            self.SelfStateMachine.DefaultState = DefaultState
 
 
 class BaseRole(Monitor):
